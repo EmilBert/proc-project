@@ -40,6 +40,7 @@ public:
 	Block(glm::vec3 pos);
 	//void Translate(glm::vec3 pos);
 
+	//void getFace(int index);
 	void Draw(Shader& shader, Camera& camera);
 };
 

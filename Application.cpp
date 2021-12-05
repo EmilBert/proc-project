@@ -8,6 +8,7 @@
 
 #include"Block.h"
 #include"Mesh.h"
+#include"Chunk.h"
 
 
 const unsigned int width = 800;
@@ -91,12 +92,12 @@ int main()
 
 	// Generates Shader object using shaders default.vert and default.frag
 	Shader shaderProgram("default.vert", "default.frag");
-	//std::vector<Vertex> verts(vertices, vertices + sizeof(vertices) / sizeof(Vertex));
-	//std::vector<GLuint> ind(indices, indices + sizeof(indices) / sizeof(GLuint));
-	
-	Block obj(glm::vec3(1.0f,  0.0f, 0.0f));
-	Block obj1(glm::vec3(0.0f, 1.0f, 0.0f));
-	Block obj2(glm::vec3(0.0f, 0.0f, 1.0f));
+
+	//Block obj(glm::vec3( 1.0f, 0.0f, 0.0f));
+	//Block obj1(glm::vec3(0.0f, 1.0f, 0.0f));
+	//Block obj2(glm::vec3(0.0f, 0.0f, 1.0f));
+
+	Chunk chunk1;
 
 	// Enables the Depth Buffer
 	glEnable(GL_DEPTH_TEST);
@@ -118,10 +119,12 @@ int main()
 		camera.updateMatrix(45.0f, 0.1f, 100.0f);
 		glLoadIdentity();
 		
+		chunk1.Draw(shaderProgram, camera);
+
 		//DrawObjectTwo
-		obj.Draw(shaderProgram, camera);
-		obj1.Draw(shaderProgram, camera);
-		obj2.Draw(shaderProgram, camera);
+		//obj.Draw(shaderProgram, camera);
+		//obj1.Draw(shaderProgram, camera);
+		//obj2.Draw(shaderProgram, camera);
 
 		// Swap the back buffer with the front buffer
 		glfwSwapBuffers(window);
