@@ -26,10 +26,11 @@
 
 class Block
 {
-
 public:
 	static Vertex block_vertices[];
 	static GLuint block_indices[];
+	
+	glm::vec3 position;
 
 	VAO VAO;
 	std::vector<Vertex> vertices;
@@ -37,6 +38,8 @@ public:
 
 	Block();
 	Block(glm::vec3 pos);
+	//void Translate(glm::vec3 pos);
+
 	void Draw(Shader& shader, Camera& camera);
 };
 

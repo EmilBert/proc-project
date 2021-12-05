@@ -72,7 +72,7 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create a GLFWwindow object of 800 by 800 pixels, naming it "YoutubeOpenGL"
-	GLFWwindow* window = glfwCreateWindow(width, height, "YoutubeOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(width, height, "BertCraft", NULL, NULL);
 	// Error check if the window fails to create
 	if (window == NULL)
 	{
@@ -93,43 +93,10 @@ int main()
 	Shader shaderProgram("default.vert", "default.frag");
 	//std::vector<Vertex> verts(vertices, vertices + sizeof(vertices) / sizeof(Vertex));
 	//std::vector<GLuint> ind(indices, indices + sizeof(indices) / sizeof(GLuint));
-	Block obj(glm::vec3(1.0f,0.0f,0.0f));
-	Block obj2(glm::vec3(2.0f, 0.0f, 0.0f));
-
-	// Shader for light cube
-	Shader lightShader("light.vert", "light.frag");
-	// Generates Shader object using shaders default.vert and default.frag
-	std::vector<Vertex> lightVerts(lightVertices, lightVertices + sizeof(lightVertices) / sizeof(Vertex));
-	std::vector<GLuint> lightInd(lightIndices, lightIndices + sizeof(lightIndices) / sizeof(GLuint));
-	Mesh light(lightVerts, lightInd);
 	
-	
-	glm::vec4 lightColor	= glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	glm::vec3 lightPos		= glm::vec3(0.5f, 0.5f, 0.5f);
-	glm::mat4 lightModel	= glm::mat4(1.0f);
-	lightModel = glm::translate(lightModel, lightPos);
-
-	lightShader.Activate();
-	glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
-	glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-	
-	glm::vec3 objectPos		= glm::vec3(1.0f, -1.0f, 0.0f);
-	glm::mat4 objectModel	= glm::mat4(1.0f);
-	objectModel = glm::translate(objectModel, objectPos);
-
-	shaderProgram.Activate();
-	glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(objectModel));
-	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-	
-
-	// Texture
-	//Texture brickTex("planks.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-	//brickTex.texUnit(shaderProgram, "tex0", 0);
-
-	// Original code from the tutorial
-	/*Texture brickTex("brick.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-	brickTex.texUnit(shaderProgram, "tex0", 0);*/
+	Block obj(glm::vec3(1.0f,  0.0f, 0.0f));
+	Block obj1(glm::vec3(0.0f, 1.0f, 0.0f));
+	Block obj2(glm::vec3(0.0f, 0.0f, 1.0f));
 
 	// Enables the Depth Buffer
 	glEnable(GL_DEPTH_TEST);
@@ -149,10 +116,12 @@ int main()
 		camera.Inputs(window);
 		// Updates and exports the camera matrix to the Vertex Shader
 		camera.updateMatrix(45.0f, 0.1f, 100.0f);
-
+		glLoadIdentity();
+		
+		//DrawObjectTwo
 		obj.Draw(shaderProgram, camera);
+		obj1.Draw(shaderProgram, camera);
 		obj2.Draw(shaderProgram, camera);
-		light.Draw(lightShader, camera);
 
 		// Swap the back buffer with the front buffer
 		glfwSwapBuffers(window);
@@ -160,13 +129,9 @@ int main()
 		glfwPollEvents();
 	}
 
-
-
 	// Delete all the objects we've created
 	//brickTex.Delete();
 	shaderProgram.Delete();
-
-	lightShader.Delete();
 	// Delete window before ending the program
 	glfwDestroyWindow(window);
 	// Terminate GLFW before ending the program

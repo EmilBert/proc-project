@@ -1,5 +1,6 @@
 #include "Block.h"
 
+
 Vertex Block::block_vertices[] = 
 { //                |   COORDINATES   |			 |     NORMALS    |			  |		COLORS	   |			| TexCoord |
 	// Top
@@ -93,16 +94,7 @@ Block::Block(glm::vec3 pos)
 {
 	vertices = std::vector<Vertex>(block_vertices, block_vertices + sizeof(block_vertices) / sizeof(Vertex));
 	indices = std::vector<GLuint>(block_indices, block_indices + sizeof(block_indices) / sizeof(GLuint));
-
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, pos);
-
-	glm::mat4 translation;
-
-	for (unsigned int i = 0; i < vertices.size() / sizeof(Vertex); i++) {
-		translation = glm::translate(translation, pos);
-		vertices[i].vertices = translation * glm::vec4(vertices[i].vertices, 1.0f);
-	}
+	position = pos;
 
 	VAO.Bind();
 	// Generates Vertex Buffer Object and links it to vertices
@@ -127,9 +119,14 @@ void Block::Draw(Shader& shader, Camera& camera)
 	shader.Activate();
 	VAO.Bind();
 
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, position);
+
 	// Take care of the camera Matrix
 	glUniform3f(glGetUniformLocation(shader.ID, "camPos"), camera.Position.x, camera.Position.y, camera.Position.z);
 	camera.Matrix(shader, "camMatrix");
+
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 	// Draw the actual mesh
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
