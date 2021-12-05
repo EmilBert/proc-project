@@ -5,7 +5,9 @@
 
 #include "VAO.h"
 #include "EBO.h"
-#include "CAMERA.h"
+#include "VBO.h"
+#include "Camera.h"
+#include "Shader.h"
 #include "Texture.h"
 
 class Mesh
@@ -16,6 +18,7 @@ public:
 	std::vector<Texture>textures;
 
 	VAO VAO;
+	Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices);
 
 	Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices, std::vector<Texture>& textures);
 	void Draw(Shader& shader, Camera& camera);
