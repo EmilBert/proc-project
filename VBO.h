@@ -6,7 +6,7 @@
 
 struct Vertex {
 	glm::vec3 vertices;
-	glm::vec3 indices;
+	glm::vec3 normals;
 	glm::vec3 color;
 	glm::vec2 UVcoord;
 };

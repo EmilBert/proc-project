@@ -6,13 +6,15 @@
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
 
+#include"Block.h"
 #include"Mesh.h"
+
 
 const unsigned int width = 800;
 const unsigned int height = 800;
 
 // Vertices coordinates
-Vertex vertices[] =
+/*Vertex vertices[] =
 { //               COORDINATES           //       NORMALS         //           COLORS				//        TexCoord         
 	Vertex{glm::vec3(-1.0f, 0.0f,  1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)},
 	Vertex{glm::vec3(-1.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f)},
@@ -26,6 +28,7 @@ GLuint indices[] =
 	0, 1, 2,
 	0, 2, 3
 };
+*/
 
 Vertex lightVertices[] =
 {			//     COORDINATES     //
@@ -88,39 +91,41 @@ int main()
 
 	// Generates Shader object using shaders default.vert and default.frag
 	Shader shaderProgram("default.vert", "default.frag");
-	std::vector<Vertex> verts(vertices, vertices + sizeof(vertices) / sizeof(Vertex));
-	std::vector<GLuint> ind(indices, indices + sizeof(indices) / sizeof(GLuint));
-	Mesh obj(verts, ind);
+	//std::vector<Vertex> verts(vertices, vertices + sizeof(vertices) / sizeof(Vertex));
+	//std::vector<GLuint> ind(indices, indices + sizeof(indices) / sizeof(GLuint));
+	Block obj(glm::vec3(1.0f,0.0f,0.0f));
+	Block obj2(glm::vec3(2.0f, 0.0f, 0.0f));
 
 	// Shader for light cube
 	Shader lightShader("light.vert", "light.frag");
 	// Generates Shader object using shaders default.vert and default.frag
 	std::vector<Vertex> lightVerts(lightVertices, lightVertices + sizeof(lightVertices) / sizeof(Vertex));
 	std::vector<GLuint> lightInd(lightIndices, lightIndices + sizeof(lightIndices) / sizeof(GLuint));
-	Mesh light(verts, ind);
-
-	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
-	glm::mat4 lightModel = glm::mat4(1.0f);
+	Mesh light(lightVerts, lightInd);
+	
+	
+	glm::vec4 lightColor	= glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	glm::vec3 lightPos		= glm::vec3(0.5f, 0.5f, 0.5f);
+	glm::mat4 lightModel	= glm::mat4(1.0f);
 	lightModel = glm::translate(lightModel, lightPos);
-
-	glm::vec3 objectPos = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::mat4 objectModel = glm::mat4(1.0f);
-	objectModel = glm::translate(objectModel, objectPos);
-
 
 	lightShader.Activate();
 	glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
 	glUniform4f(glGetUniformLocation(lightShader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+	
+	glm::vec3 objectPos		= glm::vec3(1.0f, -1.0f, 0.0f);
+	glm::mat4 objectModel	= glm::mat4(1.0f);
+	objectModel = glm::translate(objectModel, objectPos);
+
 	shaderProgram.Activate();
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(objectModel));
 	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
 	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-
+	
 
 	// Texture
-	Texture brickTex("planks.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-	brickTex.texUnit(shaderProgram, "tex0", 0);
+	//Texture brickTex("planks.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+	//brickTex.texUnit(shaderProgram, "tex0", 0);
 
 	// Original code from the tutorial
 	/*Texture brickTex("brick.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -146,6 +151,7 @@ int main()
 		camera.updateMatrix(45.0f, 0.1f, 100.0f);
 
 		obj.Draw(shaderProgram, camera);
+		obj2.Draw(shaderProgram, camera);
 		light.Draw(lightShader, camera);
 
 		// Swap the back buffer with the front buffer
@@ -157,8 +163,7 @@ int main()
 
 
 	// Delete all the objects we've created
-
-	brickTex.Delete();
+	//brickTex.Delete();
 	shaderProgram.Delete();
 
 	lightShader.Delete();

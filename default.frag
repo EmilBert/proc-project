@@ -4,12 +4,12 @@
 out vec4 FragColor;
 
 
-// Imports the color from the Vertex Shader
-in vec3 color;
 // Imports the texture coordinates from the Vertex Shader
 in vec2 texCoord;
 // Imports the normal from the Vertex Shader
 in vec3 Normal;
+// Imports the color from the Vertex Shader
+in vec3 color;
 // Imports the current position from the Vertex Shader
 in vec3 crntPos;
 

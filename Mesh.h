@@ -18,6 +18,7 @@ public:
 	std::vector<Texture>textures;
 
 	VAO VAO;
+	Mesh();
 	Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices);
 
 	Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices, std::vector<Texture>& textures);
