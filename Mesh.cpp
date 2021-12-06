@@ -33,6 +33,8 @@ void Mesh::Draw(Shader& shader, Camera& camera)
 
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0,0,0));
+	float scale = 0.2;
+	glm::mat4 scaleMat = glm::scale(glm::vec3(scale));
 
 
 	// Take care of the camera Matrix
@@ -40,6 +42,7 @@ void Mesh::Draw(Shader& shader, Camera& camera)
 	camera.Matrix(shader, "camMatrix");
 
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "scale"), 1, GL_FALSE, glm::value_ptr(scaleMat));
 
 	// Draw the actual mesh
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

@@ -11,8 +11,8 @@
 #include"Chunk.h"
 
 
-const unsigned int width = 800;
-const unsigned int height = 800;
+const unsigned int width = 1600;
+const unsigned int height = 1600;
 
 // Vertices coordinates
 /*Vertex vertices[] =

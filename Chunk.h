@@ -2,8 +2,8 @@
 
 #include "Block.h"
 
-const int WIDTH = 64;
-const int HEIGHT = 10;
+const int WIDTH = 32;
+const int HEIGHT = 32;
 
 class Chunk
 {

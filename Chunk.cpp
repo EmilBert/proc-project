@@ -66,7 +66,7 @@ Chunk::Chunk()
 	for (size_t x = 0; x < WIDTH;  x++)
 	for (size_t z = 0; z < WIDTH;  z++)
 	{
-		blocks[x][y][z] = Block(((float)rand() / RAND_MAX > 0.5), glm::vec3(x,y,z));
+		blocks[x][y][z] = Block(((float)rand() / RAND_MAX > 0.2), glm::vec3(x,y,z));
 	}
 
 	GenerateMesh();
@@ -80,7 +80,6 @@ Chunk::Chunk(Block data[WIDTH][HEIGHT][WIDTH])
 	{
 		blocks[x][y][z] = data[x][y][z];
 	}
-
 	GenerateMesh();
 }
 
