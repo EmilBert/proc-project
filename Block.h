@@ -27,20 +27,18 @@
 class Block
 {
 public:
-	static Vertex block_vertices[];
-	static GLuint block_indices[];
+	//static Vertex block_vertices[];
+	//static GLuint block_indices[];
+
 	
+
+
+	//Color / BlockType
 	glm::vec3 position;
+	bool isSolid;
 
-	VAO VAO;
-	std::vector<Vertex> vertices;
-	std::vector<GLuint> indices;
-
+public:
 	Block();
-	Block(glm::vec3 pos);
-	//void Translate(glm::vec3 pos);
-
-	//void getFace(int index);
-	void Draw(Shader& shader, Camera& camera);
+	Block(bool solid, glm::vec3 pos);
 };
 
