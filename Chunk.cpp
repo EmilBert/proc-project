@@ -134,6 +134,13 @@ void Chunk::GenerateMesh()
 			}
 		}
 	}
+
+	chunkMesh = Mesh(Chunk::verts, Chunk::inds);
+}
+
+void Chunk::Draw(Shader& shader, Camera& camera)
+{
+	chunkMesh.Draw(shader, camera);
 }
 
 

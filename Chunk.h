@@ -5,9 +5,12 @@
 const int WIDTH = 16;
 const int HEIGHT = 64;
 
+
+
+
 class Chunk
 {
-
+public:
 	std::vector<Vertex> verts;
 	std::vector<GLuint> inds;
 
