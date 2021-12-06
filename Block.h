@@ -27,13 +27,6 @@
 class Block
 {
 public:
-	//static Vertex block_vertices[];
-	//static GLuint block_indices[];
-
-	
-
-
-	//Color / BlockType
 	glm::vec3 position;
 	bool isSolid;
 

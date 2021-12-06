@@ -2,11 +2,8 @@
 
 #include "Block.h"
 
-const int WIDTH = 16;
-const int HEIGHT = 64;
-
-
-
+const int WIDTH = 64;
+const int HEIGHT = 10;
 
 class Chunk
 {
@@ -27,14 +24,17 @@ public:
 	// Index Array
 	static GLuint face_inds[];
 
+	GLuint index_depth = 0;
+
 	Block blocks[WIDTH][HEIGHT][WIDTH];
 	Mesh chunkMesh;
 
+public:
 	Chunk();
 	Chunk(Block data[WIDTH][HEIGHT][WIDTH]);
 
 	void GenerateMesh();
-	void ExtractFace(Vertex vertices[]);
+	void ExtractFace(Vertex vertices[], glm::vec3 pos);
 	void Draw(Shader& shader, Camera& camera);
 };
 

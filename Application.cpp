@@ -115,16 +115,12 @@ int main()
 
 		// Handles camera inputs
 		camera.Inputs(window);
+		
 		// Updates and exports the camera matrix to the Vertex Shader
 		camera.updateMatrix(45.0f, 0.1f, 100.0f);
 		glLoadIdentity();
 		
 		chunk1.Draw(shaderProgram, camera);
-
-		//DrawObjectTwo
-		//obj.Draw(shaderProgram, camera);
-		//obj1.Draw(shaderProgram, camera);
-		//obj2.Draw(shaderProgram, camera);
 
 		// Swap the back buffer with the front buffer
 		glfwSwapBuffers(window);
