@@ -60,13 +60,15 @@ GLuint Chunk::face_inds[] =
 	3, 2, 1
 };
 
-Chunk::Chunk()
+Chunk::Chunk(glm::vec3 pos)
 {
+	position = { WIDTH * pos.x, pos.y, WIDTH * pos.z };
+
 	for (size_t y = 0; y < HEIGHT; y++)
 	for (size_t x = 0; x < WIDTH;  x++)
 	for (size_t z = 0; z < WIDTH;  z++)
 	{
-		blocks[x][y][z] = Block(((float)rand() / RAND_MAX > 0.2), glm::vec3(x,y,z));
+		blocks[x][y][z] = Block(((float)rand() / RAND_MAX > 0.9), glm::vec3(x,y,z));
 	}
 
 	GenerateMesh();
@@ -74,6 +76,8 @@ Chunk::Chunk()
 
 Chunk::Chunk(Block data[WIDTH][HEIGHT][WIDTH])
 {
+
+
 	for (size_t y = 0; y < HEIGHT; y++)
 	for (size_t x = 0; x < WIDTH; x++)
 	for (size_t z = 0; z < WIDTH; z++)
@@ -150,7 +154,7 @@ void Chunk::GenerateMesh()
 		}
 	}
 
-	chunkMesh = Mesh(Chunk::verts, Chunk::inds);
+	chunkMesh = Mesh(Chunk::verts, Chunk::inds, position);
 }
 
 void Chunk::Draw(Shader& shader, Camera& camera)

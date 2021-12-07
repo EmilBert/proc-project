@@ -4,10 +4,11 @@ Mesh::Mesh()
 {
 }
 
-Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices)
+Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices, glm::vec3 pos)
 {
 	Mesh::vertices = vertices;
 	Mesh::indices = indices;
+	position = pos;
 
 	VAO.Bind();
 	// Generates Vertex Buffer Object and links it to vertices
@@ -32,9 +33,9 @@ void Mesh::Draw(Shader& shader, Camera& camera)
 	VAO.Bind();
 
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0,0,0));
 	float scale = 0.2;
 	glm::mat4 scaleMat = glm::scale(glm::vec3(scale));
+	model = glm::translate(model, scale*position);
 
 
 	// Take care of the camera Matrix

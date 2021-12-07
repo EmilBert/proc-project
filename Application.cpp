@@ -9,6 +9,7 @@
 #include"Block.h"
 #include"Mesh.h"
 #include"Chunk.h"
+#include"World.h"
 
 
 const unsigned int width = 1600;
@@ -93,11 +94,7 @@ int main()
 	// Generates Shader object using shaders default.vert and default.frag
 	Shader shaderProgram("default.vert", "default.frag");
 
-	//Block obj(glm::vec3( 1.0f, 0.0f, 0.0f));
-	//Block obj1(glm::vec3(0.0f, 1.0f, 0.0f));
-	//Block obj2(glm::vec3(0.0f, 0.0f, 1.0f));
-
-	Chunk chunk1;
+	World world(18);
 
 	// Enables the Depth Buffer
 	glEnable(GL_DEPTH_TEST);
@@ -120,7 +117,7 @@ int main()
 		camera.updateMatrix(45.0f, 0.1f, 100.0f);
 		glLoadIdentity();
 		
-		chunk1.Draw(shaderProgram, camera);
+		world.Draw(shaderProgram, camera);
 
 		// Swap the back buffer with the front buffer
 		glfwSwapBuffers(window);

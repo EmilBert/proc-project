@@ -16,10 +16,11 @@ public:
 	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
 	std::vector<Texture>textures;
+	glm::vec3 position;
 
 	VAO VAO;
 	Mesh();
-	Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices);
+	Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices, glm::vec3 pos);
 	//void AddToMesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices);
 
 	void Draw(Shader& shader, Camera& camera);
