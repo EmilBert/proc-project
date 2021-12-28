@@ -1,5 +1,6 @@
 #include "Chunk.h"
 #include <random>
+
 // Top
 Vertex Chunk::top_verts[] =
 {
@@ -59,7 +60,9 @@ GLuint Chunk::face_inds[] =
 	0, 1, 2,
 	3, 2, 1
 };
-
+// ----------------------------------------------------------------------
+//								Member functions
+// ----------------------------------------------------------------------
 Chunk::Chunk(glm::vec3 pos)
 {
 	position = { WIDTH * pos.x, pos.y, WIDTH * pos.z };
@@ -74,15 +77,15 @@ Chunk::Chunk(glm::vec3 pos)
 	GenerateMesh();
 }
 
-Chunk::Chunk(Block data[WIDTH][HEIGHT][WIDTH])
+Chunk::Chunk(glm::vec3 pos, utils::NoiseMap data)
 {
-
+	position = { WIDTH * pos.x, pos.y, WIDTH * pos.z };
 
 	for (size_t y = 0; y < HEIGHT; y++)
 	for (size_t x = 0; x < WIDTH; x++)
 	for (size_t z = 0; z < WIDTH; z++)
 	{
-		blocks[x][y][z] = data[x][y][z];
+		blocks[x][y][z] = Block( (y <= data.GetValue(x+position.x, z+position.z)*HEIGHT) , glm::vec3(x, y, z));
 	}
 	GenerateMesh();
 }

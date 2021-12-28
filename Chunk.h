@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Block.h"
+#include <noise\util\noiseutils.h>
 
 const int WIDTH = 16;
 const int HEIGHT = 64;
@@ -11,7 +12,7 @@ public:
 	std::vector<Vertex> verts;
 	std::vector<GLuint> inds;
 
-	// Vertex Arrays
+	// Static Vertex Arrays
 	static Vertex top_verts[];
 	static Vertex bottom_verts[];
 
@@ -23,7 +24,6 @@ public:
 
 	// Index Array
 	static GLuint face_inds[];
-
 	GLuint index_depth = 0;
 	
 	Block blocks[WIDTH][HEIGHT][WIDTH];
@@ -32,10 +32,9 @@ public:
 
 public:
 	Chunk(glm::vec3 pos);
-	Chunk(Block data[WIDTH][HEIGHT][WIDTH]);
+	Chunk(glm::vec3 pos, utils::NoiseMap data);
 
 	void GenerateMesh();
 	void ExtractFace(Vertex vertices[], glm::vec3 pos);
 	void Draw(Shader& shader, Camera& camera);
 };
-
