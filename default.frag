@@ -3,13 +3,10 @@
 // Outputs colors in RGBA
 out vec4 FragColor;
 
-
-
 in vec3 crntPos;
 in vec3 Normal;
 in vec3 color;
 in vec2 texCoord;
-
 
 //uniform sampler2D tex0;
 //uniform vec4 lightColor;
@@ -37,5 +34,5 @@ void main()
 	float specular = specAmount * specularLight;
 
 	// outputs final color
-	FragColor = vec4(0.0f, 1.0f, 0.0f, 1.0f)* lightColor * (diffuse + ambient + specular);
+	FragColor = vec4(color, 1.0f)* lightColor * (diffuse + ambient + specular);
 }

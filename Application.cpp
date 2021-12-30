@@ -13,7 +13,7 @@
 
 
 const unsigned int width = 1600;
-const unsigned int height = 1600;
+const unsigned int height = 1200;
 
 // Vertices coordinates
 /*Vertex vertices[] =
@@ -94,7 +94,7 @@ int main()
 	// Generates Shader object using shaders default.vert and default.frag
 	Shader shaderProgram("default.vert", "default.frag");
 
-	World world(18);
+	World world(30);
 
 	// Enables the Depth Buffer
 	glEnable(GL_DEPTH_TEST);

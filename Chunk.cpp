@@ -74,6 +74,20 @@ Chunk::Chunk(glm::vec3 pos)
 	GenerateMesh();
 }
 
+Chunk::Chunk(glm::vec3 pos, std::vector<std::vector<int>>& data)
+{
+	position = { WIDTH * pos.x, pos.y, WIDTH * pos.z };
+
+	for (size_t y = 0; y < HEIGHT; y++)
+	for (size_t x = 0; x < WIDTH; x++)
+	for (size_t z = 0; z < WIDTH; z++)
+	{
+		blocks[x][y][z] = Block((data[x + (int)position.x][z + (int)position.z] >= y), glm::vec3(x, y, z));
+	}
+
+	GenerateMesh();
+}
+
 Chunk::Chunk(Block data[WIDTH][HEIGHT][WIDTH])
 {
 
