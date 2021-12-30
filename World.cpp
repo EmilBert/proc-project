@@ -58,8 +58,6 @@ void World::GenerateHeightMap()
 
 			temp /= 4;
 
-			//std::cout << temp << std::endl;
-
 			blocksHeightMap[x][z] = (int)(((temp+1)/2 )*HEIGHT);
 		}
 	}

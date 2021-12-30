@@ -114,11 +114,12 @@ void Chunk::ExtractFace(Vertex vertices[], glm::vec3 pos)
 	for (size_t i = 0; i < 4; i++)
 	{
 		auto vp = model * glm::vec4(vertices[i].vertices, 1);
-		
 		Vertex v = vertices[i];
 		v.vertices = vp;
+		v.color = glm::vec3(1.0f, 0.0f, 1.0f);
 		Chunk::verts.push_back(v);
 	}
+
 	for (size_t i = 0; i < 6; i++)
 	{
 		Chunk::inds.push_back(face_inds[i] +index_depth);
@@ -170,6 +171,10 @@ void Chunk::GenerateMesh()
 
 	chunkMesh = Mesh(Chunk::verts, Chunk::inds, position);
 }
+
+void changeVertColors(Vertex verts[]) {
+}
+
 
 void Chunk::Draw(Shader& shader, Camera& camera)
 {
