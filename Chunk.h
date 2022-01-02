@@ -32,7 +32,7 @@ public:
 
 public:
 	Chunk(glm::vec3 pos);
-	Chunk(glm::vec3 pos, std::vector<std::vector<int>>& data);
+	Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<bool>>>& data);
 	Chunk(Block data[WIDTH][HEIGHT][WIDTH]);
 
 	void GenerateMesh();

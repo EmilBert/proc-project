@@ -20,13 +20,14 @@ World::World(int r)
 
 	chunks.reserve(range * range);
 	//blocks = std::vector<std::vector<std::vector<bool>>>(range * WIDTH, std::vector<std::vector<bool>>(range * HEIGHT, std::vector<bool>(range * WIDTH, false)));
-	blocksHeightMap = std::vector<std::vector<int>>(range * WIDTH, std::vector<int>(range * WIDTH, 1));
-
-	GenerateHeightMap();
+	//blocksHeightMap = std::vector<std::vector<int>>(range * WIDTH, std::vector<int>(range * WIDTH, 1));
+	blocks = std::vector<std::vector<std::vector<bool>>>(range * WIDTH, std::vector<std::vector<bool>>(HEIGHT, std::vector<bool>(range*WIDTH, false)));
+	
+	Generate3D();
 
 	for (size_t x = 0; x < range; x++) {
 		for (size_t z = 0; z < range; z++) {
-			chunks.push_back(Chunk(glm::vec3(x, 0, z), blocksHeightMap));
+			chunks.push_back(Chunk(glm::vec3(x, 0, z), blocks));
 		}
 	}
 }
@@ -62,6 +63,36 @@ void World::GenerateHeightMap()
 		}
 	}
 }
+
+void World::Generate3D()
+{
+	FastNoiseLite simplexNoise;
+	simplexNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+
+	float temp;
+	for (int x = 0; x < WIDTH * range; x++)
+	for (int z = 0; z < WIDTH * range; z++)
+	{
+		int height = HEIGHT * ((simplexNoise.GetNoise((float)x, (float)z) + 1) / 2);
+
+		for (int y = 0; y < HEIGHT; y++)
+		{
+			if (y > height) {
+				blocks[x][y][z] = false;
+				continue;
+			}
+			
+			// Combine noise into desired effect
+			temp = simplexNoise.GetNoise((float)x, float(y), (float)z);
+			bool result = false;
+			//std::cout << temp << std::endl;
+			if (temp < 0.6) result = true;
+			blocks[x][y][z] = result;
+		}
+	}
+	
+}
+
 
 void World::Draw(Shader& shader, Camera& camera)
 {

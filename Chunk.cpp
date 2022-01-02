@@ -68,13 +68,13 @@ Chunk::Chunk(glm::vec3 pos)
 	for (size_t x = 0; x < WIDTH;  x++)
 	for (size_t z = 0; z < WIDTH;  z++)
 	{
-		blocks[x][y][z] = Block(((float)rand() / RAND_MAX > 0.9), glm::vec3(x,y,z));
+		blocks[x][y][z] = Block(((float)rand() / RAND_MAX > 0.9), glm::vec3(x,y,z), glm::vec3(1.0f, 1.0f, 1.0f));
 	}
 
 	GenerateMesh();
 }
 
-Chunk::Chunk(glm::vec3 pos, std::vector<std::vector<int>>& data)
+Chunk::Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<bool>>>& data)
 {
 	position = { WIDTH * pos.x, pos.y, WIDTH * pos.z };
 
@@ -82,7 +82,11 @@ Chunk::Chunk(glm::vec3 pos, std::vector<std::vector<int>>& data)
 	for (size_t x = 0; x < WIDTH; x++)
 	for (size_t z = 0; z < WIDTH; z++)
 	{
-		blocks[x][y][z] = Block((data[x + (int)position.x][z + (int)position.z] >= y), glm::vec3(x, y, z));
+		blocks[x][y][z] = Block(data[x + (int)position.x]
+									[y]
+									[z + (int)position.z], 
+									glm::vec3(x, y, z), 
+									glm::vec3(1.0f, 1.0f, 1.0f));
 	}
 
 	GenerateMesh();
@@ -116,13 +120,13 @@ void Chunk::ExtractFace(Vertex vertices[], glm::vec3 pos)
 		auto vp = model * glm::vec4(vertices[i].vertices, 1);
 		Vertex v = vertices[i];
 		v.vertices = vp;
-		v.color = glm::vec3(1.0f, 0.0f, 1.0f);
+		v.color = glm::vec3(1.0f, 1.0f, 1.0f);
 		Chunk::verts.push_back(v);
 	}
 
 	for (size_t i = 0; i < 6; i++)
 	{
-		Chunk::inds.push_back(face_inds[i] +index_depth);
+		Chunk::inds.push_back(face_inds[i] + index_depth);
 	}
 	index_depth += 4;
 }

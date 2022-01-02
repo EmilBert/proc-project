@@ -27,11 +27,13 @@
 class Block
 {
 public:
+	//int type;
 	glm::vec3 position;
+	glm::vec3 color;
 	bool isSolid;
 
 public:
 	Block();
-	Block(bool solid, glm::vec3 pos);
+	Block(bool solid, glm::vec3 pos, glm::vec3 col);
 };
 
