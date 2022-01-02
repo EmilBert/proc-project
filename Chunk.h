@@ -35,8 +35,9 @@ public:
 	Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<bool>>>& data);
 	Chunk(Block data[WIDTH][HEIGHT][WIDTH]);
 
+
 	void GenerateMesh();
-	void ExtractFace(Vertex vertices[], glm::vec3 pos);
+	void ExtractFace(Vertex vertices[], Block data);
 	void Draw(Shader& shader, Camera& camera);
 };
 

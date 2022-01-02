@@ -69,30 +69,44 @@ void World::Generate3D()
 	FastNoiseLite simplexNoise;
 	simplexNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
 
+	FastNoiseLite cubicNoise;
+	cubicNoise.SetNoiseType(FastNoiseLite::NoiseType_ValueCubic);
+
+	FastNoiseLite cellularNoise;
+	cellularNoise.SetNoiseType(FastNoiseLite::NoiseType_Cellular);
+
 	float temp;
 	for (int x = 0; x < WIDTH * range; x++)
 	for (int z = 0; z < WIDTH * range; z++)
 	{
-		int height = HEIGHT * ((simplexNoise.GetNoise((float)x, (float)z) + 1) / 2);
+		// Generate Height
+		float height = (cubicNoise.GetNoise((float)x, (float)z) + 1) / 2;
+		float simplex = (simplexNoise.GetNoise((float)x, (float)z) + 1) / 2;
+		if (height < simplex) {
+			height = simplex;
+		}
+
+		height += (cellularNoise.GetNoise((float)x, (float)z) + 1) / 3;
+
+		int finalHeight = HEIGHT * height/2;
 
 		for (int y = 0; y < HEIGHT; y++)
 		{
-			if (y > height) {
+			// Only generate for height
+			if (y > finalHeight) {
 				blocks[x][y][z] = false;
-				continue;
+				break;
 			}
 			
 			// Combine noise into desired effect
 			temp = simplexNoise.GetNoise((float)x, float(y), (float)z);
 			bool result = false;
-			//std::cout << temp << std::endl;
 			if (temp < 0.6) result = true;
 			blocks[x][y][z] = result;
 		}
 	}
 	
 }
-
 
 void World::Draw(Shader& shader, Camera& camera)
 {

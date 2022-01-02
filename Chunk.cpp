@@ -110,17 +110,17 @@ Chunk::Chunk(Block data[WIDTH][HEIGHT][WIDTH])
 
 // Extract the given face and put its
 // vertices and indices in their respective vector
-void Chunk::ExtractFace(Vertex vertices[], glm::vec3 pos)
+void Chunk::ExtractFace(Vertex vertices[], Block data)
 {
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, pos);
+	model = glm::translate(model, data.position);
 
 	for (size_t i = 0; i < 4; i++)
 	{
 		auto vp = model * glm::vec4(vertices[i].vertices, 1);
 		Vertex v = vertices[i];
 		v.vertices = vp;
-		v.color = glm::vec3(1.0f, 1.0f, 1.0f);
+		v.color = data.color;
 		Chunk::verts.push_back(v);
 	}
 
@@ -146,29 +146,29 @@ void Chunk::GenerateMesh()
 			//Check right and left
 			if ((x < WIDTH-1 && !blocks[x + 1][y][z].isSolid) || x == WIDTH - 1) 
 			{
-				ExtractFace(right_verts, blocks[x][y][z].position);
+				ExtractFace(right_verts, blocks[x][y][z]);
 			}
 			if ((x > 0	&& !blocks[x - 1][y][z].isSolid) || x == 0)			
 			{
-				ExtractFace(left_verts, blocks[x][y][z].position);
+				ExtractFace(left_verts, blocks[x][y][z]);
 			}
 			//Check top and bottom
 			if ((y < HEIGHT-1 && !blocks[x][y + 1][z].isSolid) || y == HEIGHT - 1)
 			{
-				ExtractFace(top_verts, blocks[x][y][z].position);
+				ExtractFace(top_verts, blocks[x][y][z]);
 			}
 			if ((y > 0	&& !blocks[x][y - 1][z].isSolid) || y == 0)			
 			{
-				ExtractFace(bottom_verts, blocks[x][y][z].position);
+				ExtractFace(bottom_verts, blocks[x][y][z]);
 			}
 			//Check front and back
 			if ((z < WIDTH-1 && !blocks[x][y][z + 1].isSolid) || z == WIDTH - 1) 
 			{
-				ExtractFace(front_verts, blocks[x][y][z].position);
+				ExtractFace(front_verts, blocks[x][y][z]);
 			}
 			if ((z > 0	&& !blocks[x][y][z - 1].isSolid) || z == 0)			
 			{
-				ExtractFace(back_verts, blocks[x][y][z].position);
+				ExtractFace(back_verts, blocks[x][y][z]);
 			}
 		}
 	}
