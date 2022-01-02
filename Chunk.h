@@ -3,7 +3,7 @@
 #include "Block.h"
 
 const int WIDTH = 16;
-const int HEIGHT = 64;
+const int HEIGHT = 128;
 
 class Chunk
 {

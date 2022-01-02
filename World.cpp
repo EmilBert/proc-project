@@ -67,7 +67,17 @@ void World::GenerateHeightMap()
 void World::Generate3D()
 {
 	FastNoiseLite simplexNoise;
-	simplexNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+	simplexNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+
+	//FastNoiseLite perlinNoise;
+	//perlinNoise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+
+	//FastNoiseLite valueNoise;
+	//valueNoise.SetNoiseType(FastNoiseLite::NoiseType_Value);
+
+	FastNoiseLite simplexNoise3D;
+	simplexNoise3D.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+	simplexNoise3D.SetFrequency(0.01);
 
 	FastNoiseLite cubicNoise;
 	cubicNoise.SetNoiseType(FastNoiseLite::NoiseType_ValueCubic);
@@ -80,15 +90,17 @@ void World::Generate3D()
 	for (int z = 0; z < WIDTH * range; z++)
 	{
 		// Generate Height
-		float height = (cubicNoise.GetNoise((float)x, (float)z) + 1) / 2;
+		float height = (cubicNoise.GetNoise((float)x, (float)z) + 1) / 3;
 		float simplex = (simplexNoise.GetNoise((float)x, (float)z) + 1) / 2;
-		if (height < simplex) {
+		
+		
+		if (simplex > height) {
 			height = simplex;
 		}
 
-		height += (cellularNoise.GetNoise((float)x, (float)z) + 1) / 3;
+		height += (cellularNoise.GetNoise((float)x, (float)z) + 1) / 2;
 
-		int finalHeight = HEIGHT * height/2;
+		int finalHeight = HEIGHT * (height/2 + 0.1);
 
 		for (int y = 0; y < HEIGHT; y++)
 		{
@@ -99,9 +111,9 @@ void World::Generate3D()
 			}
 			
 			// Combine noise into desired effect
-			temp = simplexNoise.GetNoise((float)x, float(y), (float)z);
+			temp = simplexNoise3D.GetNoise((float)x, float(y), (float)z);
 			bool result = false;
-			if (temp < 0.6) result = true;
+			if (temp < 0.8) result = true;
 			blocks[x][y][z] = result;
 		}
 	}

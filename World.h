@@ -6,6 +6,7 @@
 class World
 {
 public:
+	std::vector<std::vector<std::vector<Block>>> blocksData;
 	std::vector<std::vector<std::vector<bool>>> blocks;
 	std::vector<std::vector<int>> blocksHeightMap;
 	
