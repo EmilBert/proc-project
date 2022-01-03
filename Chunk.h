@@ -33,6 +33,7 @@ public:
 public:
 	Chunk(glm::vec3 pos);
 	Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<bool>>>& data);
+	Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<Block>>>& data);
 	Chunk(Block data[WIDTH][HEIGHT][WIDTH]);
 
 

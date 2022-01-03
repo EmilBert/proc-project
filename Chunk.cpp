@@ -92,10 +92,24 @@ Chunk::Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<bool>>>& data)
 	GenerateMesh();
 }
 
+Chunk::Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<Block>>>& data) {
+	position = { WIDTH * pos.x, pos.y, WIDTH * pos.z };
+
+	for (size_t y = 0; y < HEIGHT; y++)
+	for (size_t x = 0; x < WIDTH; x++)
+	for (size_t z = 0; z < WIDTH; z++)
+	{
+		blocks[x][y][z].isSolid = data[(int)position.x + x][y][(int)position.z + z].isSolid;
+		blocks[x][y][z].color	= data[(int)position.x + x][y][(int)position.z + z].color;
+		//std::cout << blocks[x][y][z].color.x << blocks[x][y][z].color.y << blocks[x][y][z].color.z << std::endl;
+		blocks[x][y][z].position = glm::vec3(x, y, z);
+	}
+
+	GenerateMesh();
+}
+
 Chunk::Chunk(Block data[WIDTH][HEIGHT][WIDTH])
 {
-
-
 	for (size_t y = 0; y < HEIGHT; y++)
 	for (size_t x = 0; x < WIDTH; x++)
 	for (size_t z = 0; z < WIDTH; z++)
@@ -121,6 +135,7 @@ void Chunk::ExtractFace(Vertex vertices[], Block data)
 		Vertex v = vertices[i];
 		v.vertices = vp;
 		v.color = data.color;
+		//std::cout << v.color.x << v.color.y << v.color.z  << std::endl;
 		Chunk::verts.push_back(v);
 	}
 
