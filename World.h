@@ -11,8 +11,10 @@ public:
 	std::vector<std::vector<int>> blocksHeightMap;
 	
 	static glm::vec3 sand;
+	static glm::vec3 moss;
 	static glm::vec3 grass;
 	static glm::vec3 stone;
+	static glm::vec3 ice;
 	static glm::vec3 snow;
 
 	// Storage of chunks

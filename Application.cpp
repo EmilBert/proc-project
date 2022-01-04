@@ -94,7 +94,7 @@ int main()
 	// Generates Shader object using shaders default.vert and default.frag
 	Shader shaderProgram("default.vert", "default.frag");
 
-	World world(10);
+	World world(30);
 
 	// Enables the Depth Buffer
 	glEnable(GL_DEPTH_TEST);
