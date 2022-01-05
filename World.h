@@ -2,7 +2,6 @@
 #include "Chunk.h"
 #include "Block.h"
 
-
 class World
 {
 public:
@@ -16,6 +15,10 @@ public:
 	static glm::vec3 stone;
 	static glm::vec3 ice;
 	static glm::vec3 snow;
+	static glm::vec3 clay;
+	static glm::vec3 water;
+
+
 
 	// Storage of chunks
 	std::vector<Chunk> chunks;

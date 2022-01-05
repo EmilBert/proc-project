@@ -1,13 +1,25 @@
 #include "World.h"
 #include <FastNoise/FastNoiseLite.hpp>
 
-glm::vec3 World::sand	= glm::vec3(0.76f, 0.69f, 0.5f);
-glm::vec3 World::grass	= glm::vec3(0.0f, 0.60f, 0.09f);
-glm::vec3 World::moss	= glm::vec3(0.0f, 0.40f, 0.07f);
-glm::vec3 World::stone	= glm::vec3(0.392f, 0.392, 0.392);
-glm::vec3 World::snow	= glm::vec3(0.8f, 0.8, 1.0f);
-glm::vec3 World::ice	= glm::vec3(0.4f, 0.6, 1.0f);
+glm::vec3 World::sand	= glm::vec3(0.76, 0.69, 0.5);
+glm::vec3 World::grass	= glm::vec3(0.0, 0.60f, 0.09);
+glm::vec3 World::moss	= glm::vec3(0.0, 0.40f, 0.07);
+glm::vec3 World::stone	= glm::vec3(0.392, 0.392, 0.392);
+glm::vec3 World::snow	= glm::vec3(0.8, 0.8, 1.0);
+glm::vec3 World::ice	= glm::vec3(0.4, 0.6, 1.0);
+glm::vec3 World::clay	= glm::vec3(0.91, 0.64, 0.50);
+glm::vec3 World::water	= glm::vec3(0.1, 0.1, 0.9);
 
+enum biomeType
+{
+	hills		= 0,
+	desert		= 1,
+	mesa		= 2,
+	glacier		= 3,
+	forest		= 4,
+	mountains	= 5,
+	ocean		= 6
+};
 
 World::World()
 {
@@ -27,8 +39,8 @@ World::World(int r)
 
 	chunks.reserve(range * range);
 	//blocks = std::vector<std::vector<std::vector<bool>>>(range * WIDTH, std::vector<std::vector<bool>>(range * HEIGHT, std::vector<bool>(range * WIDTH, false)));
-	//blocksHeightMap = std::vector<std::vector<int>>(range * WIDTH, std::vector<int>(range * WIDTH, 1));
 	//blocks = std::vector<std::vector<std::vector<bool>>>(range * WIDTH, std::vector<std::vector<bool>>(HEIGHT, std::vector<bool>(range*WIDTH, false)));
+	blocksHeightMap = std::vector<std::vector<int>>(range * WIDTH, std::vector<int>(range * WIDTH, 1));
 	blocksData = std::vector<std::vector<std::vector<Block>>>(range * WIDTH, std::vector<std::vector<Block>>(HEIGHT, std::vector<Block>(range * WIDTH, Block())));
 	
 	Generate3DBlocks();
@@ -134,7 +146,7 @@ void World::Generate3DBlocks()
 {
 	FastNoiseLite simplexNoise;
 	simplexNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
-	simplexNoise.SetFrequency(0.05);
+	simplexNoise.SetFrequency(0.005);
 
 	FastNoiseLite perlinNoise;
 	perlinNoise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
@@ -142,7 +154,7 @@ void World::Generate3DBlocks()
 
 	FastNoiseLite valueNoise;
 	valueNoise.SetNoiseType(FastNoiseLite::NoiseType_Value);
-	valueNoise.SetFrequency(0.015);
+	valueNoise.SetFrequency(0.0015);
 	valueNoise.SetFractalOctaves(8);
 	valueNoise.SetDomainWarpAmp(50);
 	valueNoise.SetFractalGain(20);
@@ -186,11 +198,14 @@ void World::Generate3DBlocks()
 	biomeWarp.SetFractalGain(0.5);
 	biomeWarp.SetCellularReturnType(FastNoiseLite::CellularReturnType_CellValue);
 	
+	
+	float currentNoise1 = 0;
+	float currentNoise2 = 0;
+	glm::vec3 blockColor = stone;
 
 	for (size_t x = 0; x < WIDTH * range; x++)
 	for (size_t z = 0; z < WIDTH * range; z++)
 	{
-
 		float xf = x;
 		float zf = z;
 
@@ -200,79 +215,120 @@ void World::Generate3DBlocks()
 		float simplex	= (simplexNoise.GetNoise(	(float)x,	(float)z) + 1) / 2;
 		float value		= (valueNoise.GetNoise(		(float)x,	(float)z) + 1) / 2;
 		float cellular	= (cellularNoise.GetNoise(	(float)x,	(float)z) + 1) / 2;
-		float biome		= abs(biomeNoise.GetNoise(		xf,	zf));
+		float biome		= (biomeNoise.GetNoise(				xf,		zf) + 1) / 2;
 		//float simplex	= (simplexNoise.GetNoise(	(float)x,	(float)z) + 1) / 4;
 
-		size_t y = 0;
 		
 
+		//Decide biome & set settings
+		if (biome > 0.9) { // Glacier
+			currentNoise2 = currentNoise1;
+			currentNoise1 = simplex;
+			blockColor	  =	ice;
 
-		//std::cout << "Biome value:" << (biomeNoise.GetNoise((float)x, (float)z)) << std::endl;
-
-		auto color = stone;
-		if (biome > 0.2) color = sand;
-		if (biome > 0.4) color = grass;
-		if (biome > 0.6) color = moss;
-		if (biome > 0.8) color = snow;
-		if (biome > 0.9) color = ice;
+		}else if (biome > 0.7) { //Hills
+			currentNoise2 = currentNoise1;
+			currentNoise1 = value;
+			blockColor = grass;
+		}
+		else if (biome > 0.6) { // Desert
+			currentNoise2 = currentNoise1;
+			currentNoise1 = cellular;
+			blockColor = sand;
+		}
+		else if (biome > 0.5) {// Ocean
+			currentNoise2 = currentNoise1;
+			currentNoise1 = simplex;
+			blockColor = water;
+		}
+		else if (biome > 0.4) {// Mesa
+			currentNoise2 = currentNoise1;
+			currentNoise1 = cubic;
+			blockColor = clay;
+		}
+		else if (biome > 0.2) { // Mountains
+			currentNoise2 = currentNoise1;
+			currentNoise1 = value;
+			blockColor = snow;
+		}
+		else if (biome > 0.0) { // Forest
+			currentNoise2 = currentNoise1;
+			currentNoise1 = simplex;
+			blockColor = moss;
+		}
 		
+		//Blend biomes
+		float useNoise;
+		if (currentNoise1 > currentNoise2) {
+			useNoise = currentNoise1;
+		}
+		else {
+			useNoise = currentNoise2;
+		}
 		
+		blocksHeightMap[x][z] = useNoise * HEIGHT * 0.9;
+	}
 
-		//Add stone
-		for (; y < biome*HEIGHT; y++) {
-			blocksData[x][y][z].isSolid		= true;
-			blocksData[x][y][z].color		= color;
-			blocksData[x][y][z].position	= glm::vec3(x, y, z);
-			
+	
+
+	int smoothRange = 10;
+	for (size_t x = smoothRange; x < WIDTH * range - smoothRange; x++)
+	for (size_t z = smoothRange; z < WIDTH * range - smoothRange; z++)
+	{
+		int heightTotal  = 0;
+		int smoothLength = smoothRange * 2 + 1;
+		for (size_t x2 = x - smoothRange; x2 < x + smoothRange; x2++)
+		for (size_t z2 = z - smoothRange; z2 < z + smoothRange; z2++)
+		{
+			heightTotal += blocksHeightMap[x2][z2];
+		}
+		blocksHeightMap[x][z] = heightTotal / (smoothLength*smoothLength);
+	}
+
+	for (size_t x = smoothRange; x < WIDTH * range - smoothRange; x++)
+	for (size_t z = smoothRange; z < WIDTH * range - smoothRange; z++)
+	{
+		glm::vec3 blockColor;
+		float xf = x;
+		float zf = z;
+		biomeWarp.DomainWarp(xf, zf);
+		float biome = (biomeNoise.GetNoise(xf, zf) + 1) / 2;
+		//Decide biome & set settings
+		if (biome > 0.9) { // Glacier
+			blockColor = ice;
+		}
+		else if (biome > 0.7) { //Hills
+			blockColor = grass;
+		}
+		else if (biome > 0.6) { // Desert
+			blockColor = sand;
+		}
+		else if (biome > 0.5) {// Ocean
+			blockColor = water;
+		}
+		else if (biome > 0.4) {// Mesa
+			blockColor = clay;
+		}
+		else if (biome > 0.2) { // Mountains
+			blockColor = snow;
+		}
+		else if (biome > 0.0) { // Forest
+			blockColor = moss;
 		}
 
-
-
-
-
-		
-		// Add hills
-		/*for (; y < (value*0.8) *HEIGHT-1; y++) {
+		size_t y = 0;
+		for (; y < blocksHeightMap[x][z] * 0.9; y++)
+		{
 			blocksData[x][y][z].isSolid = true;
-			blocksData[x][y][z].color = stone;
+			blocksData[x][y][z].color = blockColor;
 			blocksData[x][y][z].position = glm::vec3(x, y, z);
-		}*/
+		}
 
-
-		// Add Beach
-		/*for (size_t y_beach = y; y_beach < y + (cellular * 0.1) * HEIGHT && y < HEIGHT*0.2; y_beach++) {
-			blocksData[x][y_beach][z].isSolid = true;
-			blocksData[x][y_beach][z].color = sand;
-			blocksData[x][y_beach][z].position = glm::vec3(x, y_beach, z);
-		}*/
-
-		// Add Grass
-		/*for (size_t y_temp = y; y_temp < y + (cellular * 0.1) * HEIGHT && y > HEIGHT * 0.2; y_temp++) {
-			blocksData[x][y_temp][z].isSolid = true;
-			blocksData[x][y_temp][z].color = grass;
-			blocksData[x][y_temp][z].position = glm::vec3(x, y_temp, z);
-		}*/
-
-		// Add snow peaks
-		/*for (size_t y_temp = y; y_temp < y + (simplex * 0.1 -0.02) * HEIGHT && y > HEIGHT * 0.6; y_temp++) {
-			blocksData[x][y_temp][z].isSolid = true;
-			blocksData[x][y_temp][z].color = snow;
-			blocksData[x][y_temp][z].position = glm::vec3(x, y_temp, z);
-		}*/
-
-		// Add caves
-		//for (size_t y = 0; y < HEIGHT; y++) {
-		//	if (!blocksData[x][y][z].isSolid) {
-		//		break;
-		//	}
-
-		//	//std::cout << perlinNoise.GetNoise((float)x, (float)y, (float)z) << std::endl;
-		//	if (perlinNoise.GetNoise((float)x, (float)y, (float)z) > 0.4) {
-		//		blocksData[x][y][z].isSolid = false;
-		//	}
-		//}
-		
 	}
+
+
+
+
 }
 
 
