@@ -169,6 +169,8 @@ void World::Generate3DBlocks()
 
 	FastNoiseLite cellularNoise;
 	cellularNoise.SetNoiseType(FastNoiseLite::NoiseType_Cellular);
+	cellularNoise.SetFrequency(0.01);
+	cellularNoise.SetFractalType(FastNoiseLite::FractalType_PingPong);
 
 	FastNoiseLite biomeNoise;
 	biomeNoise.SetNoiseType(FastNoiseLite::NoiseType_Cellular);
@@ -221,52 +223,37 @@ void World::Generate3DBlocks()
 		
 
 		//Decide biome & set settings
-		if (biome > 0.9) { // Glacier
-			currentNoise2 = currentNoise1;
+		if (biome > 0.9) { // glacier
 			currentNoise1 = simplex;
 			blockColor	  =	ice;
 
-		}else if (biome > 0.7) { //Hills
-			currentNoise2 = currentNoise1;
+		}else if (biome > 0.7) { //hills
 			currentNoise1 = value;
 			blockColor = grass;
 		}
-		else if (biome > 0.6) { // Desert
-			currentNoise2 = currentNoise1;
-			currentNoise1 = cellular;
+		else if (biome > 0.6) { // desert
+			currentNoise1 = cellular * 0.3 + simplex * 0.1 + 0.2;
 			blockColor = sand;
 		}
-		else if (biome > 0.5) {// Ocean
-			currentNoise2 = currentNoise1;
+		else if (biome > 0.5) {// ocean
 			currentNoise1 = simplex;
 			blockColor = water;
 		}
-		else if (biome > 0.4) {// Mesa
-			currentNoise2 = currentNoise1;
+		else if (biome > 0.4) {// mesa
 			currentNoise1 = cubic;
 			blockColor = clay;
 		}
-		else if (biome > 0.2) { // Mountains
-			currentNoise2 = currentNoise1;
+		else if (biome > 0.2) { // mountains
 			currentNoise1 = value;
 			blockColor = snow;
 		}
-		else if (biome > 0.0) { // Forest
-			currentNoise2 = currentNoise1;
+		else if (biome > 0.0) { // forest
 			currentNoise1 = simplex;
 			blockColor = moss;
 		}
 		
-		//Blend biomes
-		float useNoise;
-		if (currentNoise1 > currentNoise2) {
-			useNoise = currentNoise1;
-		}
-		else {
-			useNoise = currentNoise2;
-		}
-		
-		blocksHeightMap[x][z] = useNoise * HEIGHT * 0.9;
+		blocksHeightMap[x][z] = (currentNoise1)* HEIGHT;
+		if (blocksHeightMap[x][z] == 0) blocksHeightMap[x][z] = 1;
 	}
 
 	
@@ -277,22 +264,25 @@ void World::Generate3DBlocks()
 	{
 		int heightTotal  = 0;
 		int smoothLength = smoothRange * 2 + 1;
+
 		for (size_t x2 = x - smoothRange; x2 < x + smoothRange; x2++)
 		for (size_t z2 = z - smoothRange; z2 < z + smoothRange; z2++)
 		{
 			heightTotal += blocksHeightMap[x2][z2];
 		}
 		blocksHeightMap[x][z] = heightTotal / (smoothLength*smoothLength);
+		if (blocksHeightMap[x][z] == 0) blocksHeightMap[x][z] = 1;
 	}
 
 	for (size_t x = smoothRange; x < WIDTH * range - smoothRange; x++)
 	for (size_t z = smoothRange; z < WIDTH * range - smoothRange; z++)
 	{
-		glm::vec3 blockColor;
-		float xf = x;
-		float zf = z;
+		glm::vec3 blockColor = sand;
+		float xf = x, zf = z;
 		biomeWarp.DomainWarp(xf, zf);
+		
 		float biome = (biomeNoise.GetNoise(xf, zf) + 1) / 2;
+		
 		//Decide biome & set settings
 		if (biome > 0.9) { // Glacier
 			blockColor = ice;
@@ -323,12 +313,7 @@ void World::Generate3DBlocks()
 			blocksData[x][y][z].color = blockColor;
 			blocksData[x][y][z].position = glm::vec3(x, y, z);
 		}
-
 	}
-
-
-
-
 }
 
 
