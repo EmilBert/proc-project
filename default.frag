@@ -66,7 +66,16 @@ void main()
 	//vec3 fcolor = mix(black, white, smoothstep(0, 0.4, posy));
 
 	// outputs final color
-	FragColor = vec4(color, 1.0f)* lightColor * (diffuse + ambient + specular);
+	float a = 1.0f;
+	
+	float lighting =(diffuse + ambient + specular);
+	if(color.x == 0.2f && color.y == 0.2f && color.z == 1.0f){ 
+		a = 0.3f;
+		lighting = 1.0f;
+	}
+	
+
+	FragColor = vec4(color * lighting, a)* lightColor ;
 	//*fcolor
 
 }

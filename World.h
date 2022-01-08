@@ -2,12 +2,23 @@
 #include "Chunk.h"
 #include "Block.h"
 
+enum BiomeType
+{
+	hills = 0,
+	desert = 1,
+	mesa = 2,
+	glacier = 3,
+	forest = 4,
+	mountains = 5,
+	ocean = 6
+};
+
 class World
 {
 public:
 	std::vector<std::vector<std::vector<Block>>> blocksData;
 	std::vector<std::vector<std::vector<bool>>> blocks;
-	std::vector<std::vector<int>> blocksHeightMap;
+	std::vector<std::vector<std::pair<int, BiomeType>>> blocksHeightMap;
 	
 	static glm::vec3 sand;
 	static glm::vec3 moss;

@@ -3,6 +3,7 @@
 Block::Block()
 {
 	isSolid		= false;
+	isTransparent = false;
 	position	= glm::vec3(0, 0, 0);
 	color		= glm::vec3(0, 0, 0);
 }
@@ -10,8 +11,9 @@ Block::Block()
 Block::Block(bool solid, glm::vec3 pos, glm::vec3 col)
 {
 	isSolid		= solid;
-	color		= col;
+	isTransparent = false;
 	position	= pos;
+	color		= col;
 }
 
 

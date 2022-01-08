@@ -4,7 +4,6 @@
 #include <vector>
 #include"Mesh.h"
 /*
-
 	  y
 	  |
 	  |___x
@@ -21,7 +20,6 @@
 	|  4________|_5
 	| / 		| /
 	6/__________7/
-
 */
 
 class Block
@@ -31,6 +29,7 @@ public:
 	glm::vec3 position;
 	glm::vec3 color;
 	bool isSolid;
+	bool isTransparent;
 
 public:
 	Block();

@@ -28,6 +28,7 @@ public:
 	
 	Block blocks[WIDTH][HEIGHT][WIDTH];
 	Mesh chunkMesh;
+	Mesh waterMesh;
 	glm::vec3 position;
 
 public:
@@ -38,7 +39,9 @@ public:
 
 
 	void GenerateMesh();
+	void GenerateWaterMesh();
 	void ExtractFace(Vertex vertices[], Block data);
 	void Draw(Shader& shader, Camera& camera);
+	void DrawWater(Shader& shader, Camera& camera);
 };
 

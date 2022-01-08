@@ -100,6 +100,7 @@ Chunk::Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<Block>>>& data) 
 	for (size_t z = 0; z < WIDTH; z++)
 	{
 		blocks[x][y][z].isSolid = data[(int)position.x + x][y][(int)position.z + z].isSolid;
+		blocks[x][y][z].isTransparent = data[(int)position.x + x][y][(int)position.z + z].isTransparent;
 		blocks[x][y][z].color	= data[(int)position.x + x][y][(int)position.z + z].color;
 		//std::cout << blocks[x][y][z].color.x << blocks[x][y][z].color.y << blocks[x][y][z].color.z << std::endl;
 		blocks[x][y][z].position = glm::vec3(x, y, z);
@@ -159,46 +160,83 @@ void Chunk::GenerateMesh()
 		if (blocks[x][y][z].isSolid) 
 		{
 			//Check right and left
-			if ((x < WIDTH-1 && !blocks[x + 1][y][z].isSolid) || x == WIDTH - 1) 
-			{
+			if ((x < WIDTH-1 && !blocks[x + 1][y][z].isSolid) || x == WIDTH - 1) {
 				ExtractFace(right_verts, blocks[x][y][z]);
 			}
-			if ((x > 0	&& !blocks[x - 1][y][z].isSolid) || x == 0)			
-			{
+			if ((x > 0	&& !blocks[x - 1][y][z].isSolid) || x == 0)	{
 				ExtractFace(left_verts, blocks[x][y][z]);
 			}
 			//Check top and bottom
-			if ((y < HEIGHT-1 && !blocks[x][y + 1][z].isSolid) || y == HEIGHT - 1)
-			{
+			if ((y < HEIGHT-1 && !blocks[x][y + 1][z].isSolid) || y == HEIGHT - 1){
 				ExtractFace(top_verts, blocks[x][y][z]);
 			}
-			if ((y > 0	&& !blocks[x][y - 1][z].isSolid) || y == 0)			
-			{
+			if ((y > 0	&& !blocks[x][y - 1][z].isSolid) || y == 0)	{
 				ExtractFace(bottom_verts, blocks[x][y][z]);
 			}
 			//Check front and back
-			if ((z < WIDTH-1 && !blocks[x][y][z + 1].isSolid) || z == WIDTH - 1) 
-			{
+			if ((z < WIDTH-1 && !blocks[x][y][z + 1].isSolid) || z == WIDTH - 1) {
 				ExtractFace(front_verts, blocks[x][y][z]);
 			}
-			if ((z > 0	&& !blocks[x][y][z - 1].isSolid) || z == 0)			
-			{
+			if ((z > 0	&& !blocks[x][y][z - 1].isSolid) || z == 0)	{
 				ExtractFace(back_verts, blocks[x][y][z]);
 			}
 		}
 	}
 
 	chunkMesh = Mesh(Chunk::verts, Chunk::inds, position);
+	GenerateWaterMesh();
 }
 
-void changeVertColors(Vertex verts[]) {
+void Chunk::GenerateWaterMesh()
+{
+	index_depth = 0;
+
+	for (size_t y = 0; y < HEIGHT; y++)
+	for (size_t x = 0; x < WIDTH; x++)
+	for (size_t z = 0; z < WIDTH; z++)
+	{
+
+		// Is this Block transparent?
+		if (blocks[x][y][z].isTransparent)
+		{
+					////Check right and left
+					//if ((x < WIDTH - 1 && !blocks[x + 1][y][z].isTransparent) || x == WIDTH - 1) {
+					//	ExtractFace(right_verts, blocks[x][y][z]);
+					//}
+					//if ((x > 0 && !blocks[x - 1][y][z].isSolid) || x == 0) {
+					//	ExtractFace(left_verts, blocks[x][y][z]);
+					//}
+					//Check top and bottom
+					if ((y < HEIGHT - 1 && !blocks[x][y + 1][z].isTransparent) || y == HEIGHT - 1) {
+						ExtractFace(top_verts, blocks[x][y][z]);
+					}
+					if ((y > 0 && !blocks[x][y - 1][z].isTransparent) || y == 0) {
+						ExtractFace(bottom_verts, blocks[x][y][z]);
+					}
+					////Check front and back
+					//if ((z < WIDTH - 1 && !blocks[x][y][z + 1].isTransparent) || z == WIDTH - 1) {
+					//	ExtractFace(front_verts, blocks[x][y][z]);
+					//}
+					//if ((z > 0 && !blocks[x][y][z - 1].isTransparent) || z == 0) {
+					//	ExtractFace(back_verts, blocks[x][y][z]);
+					//}
+		}
+
+	}
+		waterMesh = Mesh(Chunk::verts, Chunk::inds, position);
 }
 
 
-void Chunk::Draw(Shader& shader, Camera& camera)
+void Chunk::Draw(Shader & shader, Camera & camera)
 {
 	chunkMesh.Draw(shader, camera);
 }
+
+void Chunk::DrawWater(Shader& shader, Camera& camera)
+{
+	waterMesh.Draw(shader, camera);
+}
+
 
 
 
