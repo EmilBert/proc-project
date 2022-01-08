@@ -13,7 +13,7 @@
 
 
 const unsigned int width = 1600;
-const unsigned int height = 1200;
+const unsigned int height = 1000;
 
 // Vertices coordinates
 /*Vertex vertices[] =
@@ -92,15 +92,17 @@ int main()
 	glViewport(0, 0, width, height);
 
 	// Generates Shader object using shaders default.vert and default.frag
-	Shader shaderProgram("default.vert", "default.frag");
+	Shader terrainShader("default.vert", "default.frag");
+	Shader waterShader("water.vert", "water.frag");
 
-	World world(20);
+	World world(40);
 
 	// Enables the Depth Buffer
-	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
+	glEnable(GL_DEPTH_TEST);
 	// Creates camera object
 	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
 
@@ -119,8 +121,7 @@ int main()
 		camera.updateMatrix(45.0f, 0.1f, 100.0f);
 		glLoadIdentity();
 		
-		world.Draw(shaderProgram, camera);
-
+		world.Draw(terrainShader, waterShader, camera);
 		// Swap the back buffer with the front buffer
 		glfwSwapBuffers(window);
 		// Take care of all GLFW events
@@ -129,7 +130,8 @@ int main()
 
 	// Delete all the objects we've created
 	//brickTex.Delete();
-	shaderProgram.Delete();
+	terrainShader.Delete();
+	waterShader.Delete();
 	// Delete window before ending the program
 	glfwDestroyWindow(window);
 	// Terminate GLFW before ending the program

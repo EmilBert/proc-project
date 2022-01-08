@@ -21,9 +21,9 @@ Vertex Chunk::bottom_verts[] =
 // Right
 Vertex Chunk::right_verts[] =
 {
-	Vertex{glm::vec3(1.0f, 0.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f),	glm::vec2(1.0f, 0.0f)},
+	Vertex{glm::vec3(1.0f, 0.0f, 1.0f),  glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f),	glm::vec2(1.0f, 0.0f)},
 	Vertex{glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f),	glm::vec2(1.0f, 0.0f)},
-	Vertex{glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f)},
+	Vertex{glm::vec3(1.0f, 0.0f, 0.0f),	 glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f)},
 	Vertex{glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f)}
 };
 
@@ -125,24 +125,23 @@ Chunk::Chunk(Block data[WIDTH][HEIGHT][WIDTH])
 
 // Extract the given face and put its
 // vertices and indices in their respective vector
-void Chunk::ExtractFace(Vertex vertices[], Block data)
+void Chunk::ExtractFace(Vertex vertices[], Block data ,std::vector<Vertex> &verts, std::vector<GLuint> &inds)
 {
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, data.position);
 
 	for (size_t i = 0; i < 4; i++)
 	{
-		auto vp = model * glm::vec4(vertices[i].vertices, 1);
-		Vertex v = vertices[i];
-		v.vertices = vp;
-		v.color = data.color;
-		//std::cout << v.color.x << v.color.y << v.color.z  << std::endl;
-		Chunk::verts.push_back(v);
+		auto vp		= model * glm::vec4(vertices[i].vertices, 1);
+		Vertex v	= vertices[i];
+		v.vertices	= vp;
+		v.color		= data.color;
+		verts.push_back(v);
 	}
 
 	for (size_t i = 0; i < 6; i++)
 	{
-		Chunk::inds.push_back(face_inds[i] + index_depth);
+		inds.push_back(face_inds[i] + index_depth);
 	}
 	index_depth += 4;
 }
@@ -150,8 +149,11 @@ void Chunk::ExtractFace(Vertex vertices[], Block data)
 // Generate a mesh and store it in the chunkMesh member variable
 void Chunk::GenerateMesh()
 {
-	index_depth = 0;
 
+	std::vector<Vertex> verts;
+	std::vector<GLuint> inds;
+
+	index_depth = 0;
 	for (size_t y = 0; y < HEIGHT; y++)
 	for (size_t x = 0; x < WIDTH; x++)
 	for (size_t z = 0; z < WIDTH; z++)
@@ -161,35 +163,38 @@ void Chunk::GenerateMesh()
 		{
 			//Check right and left
 			if ((x < WIDTH-1 && !blocks[x + 1][y][z].isSolid) || x == WIDTH - 1) {
-				ExtractFace(right_verts, blocks[x][y][z]);
+				ExtractFace(right_verts, blocks[x][y][z], verts, inds);
 			}
 			if ((x > 0	&& !blocks[x - 1][y][z].isSolid) || x == 0)	{
-				ExtractFace(left_verts, blocks[x][y][z]);
+				ExtractFace(left_verts, blocks[x][y][z], verts, inds);
 			}
 			//Check top and bottom
 			if ((y < HEIGHT-1 && !blocks[x][y + 1][z].isSolid) || y == HEIGHT - 1){
-				ExtractFace(top_verts, blocks[x][y][z]);
+				ExtractFace(top_verts, blocks[x][y][z], verts, inds);
 			}
 			if ((y > 0	&& !blocks[x][y - 1][z].isSolid) || y == 0)	{
-				ExtractFace(bottom_verts, blocks[x][y][z]);
+				ExtractFace(bottom_verts, blocks[x][y][z], verts, inds);
 			}
 			//Check front and back
 			if ((z < WIDTH-1 && !blocks[x][y][z + 1].isSolid) || z == WIDTH - 1) {
-				ExtractFace(front_verts, blocks[x][y][z]);
+				ExtractFace(front_verts, blocks[x][y][z], verts, inds);
 			}
 			if ((z > 0	&& !blocks[x][y][z - 1].isSolid) || z == 0)	{
-				ExtractFace(back_verts, blocks[x][y][z]);
+				ExtractFace(back_verts, blocks[x][y][z], verts, inds);
 			}
 		}
 	}
 
-	chunkMesh = Mesh(Chunk::verts, Chunk::inds, position);
+	chunkMesh = Mesh(verts, inds, position);
 	GenerateWaterMesh();
 }
 
 void Chunk::GenerateWaterMesh()
 {
 	index_depth = 0;
+
+	std::vector<Vertex> verts;
+	std::vector<GLuint> inds;
 
 	for (size_t y = 0; y < HEIGHT; y++)
 	for (size_t x = 0; x < WIDTH; x++)
@@ -200,30 +205,30 @@ void Chunk::GenerateWaterMesh()
 		if (blocks[x][y][z].isTransparent)
 		{
 					////Check right and left
-					//if ((x < WIDTH - 1 && !blocks[x + 1][y][z].isTransparent) || x == WIDTH - 1) {
-					//	ExtractFace(right_verts, blocks[x][y][z]);
-					//}
-					//if ((x > 0 && !blocks[x - 1][y][z].isSolid) || x == 0) {
-					//	ExtractFace(left_verts, blocks[x][y][z]);
-					//}
+					/*if ((x < WIDTH - 1 && !blocks[x + 1][y][z].isTransparent) || x == WIDTH - 1) {
+						ExtractFace(right_verts, blocks[x][y][z], verts, inds);
+					}
+					if ((x > 0 && !blocks[x - 1][y][z].isTransparent) || x == 0) {
+						ExtractFace(left_verts, blocks[x][y][z], verts, inds);
+					}*/
 					//Check top and bottom
 					if ((y < HEIGHT - 1 && !blocks[x][y + 1][z].isTransparent) || y == HEIGHT - 1) {
-						ExtractFace(top_verts, blocks[x][y][z]);
+						ExtractFace(top_verts, blocks[x][y][z], verts, inds);
 					}
-					if ((y > 0 && !blocks[x][y - 1][z].isTransparent) || y == 0) {
-						ExtractFace(bottom_verts, blocks[x][y][z]);
-					}
+					/*if ((y > 0 && !blocks[x][y - 1][z].isTransparent) || y == 0) {
+						ExtractFace(bottom_verts, blocks[x][y][z], verts, inds);
+					}*/
 					////Check front and back
-					//if ((z < WIDTH - 1 && !blocks[x][y][z + 1].isTransparent) || z == WIDTH - 1) {
-					//	ExtractFace(front_verts, blocks[x][y][z]);
-					//}
-					//if ((z > 0 && !blocks[x][y][z - 1].isTransparent) || z == 0) {
-					//	ExtractFace(back_verts, blocks[x][y][z]);
-					//}
+					/*if ((z < WIDTH - 1 && !blocks[x][y][z + 1].isTransparent) || z == WIDTH - 1) {
+						ExtractFace(front_verts, blocks[x][y][z], verts, inds);
+					}
+					if ((z > 0 && !blocks[x][y][z - 1].isTransparent) || z == 0) {
+						ExtractFace(back_verts, blocks[x][y][z], verts, inds), verts, inds;
+					}*/
 		}
 
 	}
-		waterMesh = Mesh(Chunk::verts, Chunk::inds, position);
+		waterMesh = Mesh(verts, inds, position);
 }
 
 

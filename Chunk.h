@@ -8,9 +8,6 @@ const int HEIGHT = 128;
 class Chunk
 {
 public:
-	std::vector<Vertex> verts;
-	std::vector<GLuint> inds;
-
 	// Vertex Arrays
 	static Vertex top_verts[];
 	static Vertex bottom_verts[];
@@ -40,7 +37,7 @@ public:
 
 	void GenerateMesh();
 	void GenerateWaterMesh();
-	void ExtractFace(Vertex vertices[], Block data);
+	void ExtractFace(Vertex vertices[], Block data, std::vector<Vertex>& verts, std::vector<GLuint>& inds);
 	void Draw(Shader& shader, Camera& camera);
 	void DrawWater(Shader& shader, Camera& camera);
 };

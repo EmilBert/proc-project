@@ -65,12 +65,7 @@ void main()
 
 	// outputs final color
 	float lighting =(diffuse + ambient + specular);
-	
-	FragColor = vec4(color * lighting, 1.0f)* lightColor;
-	
-	
 
-	//*fcolor
-
+	FragColor = vec4(color * lighting, 0.7)* lightColor;
 }
 
