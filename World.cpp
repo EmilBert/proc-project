@@ -76,10 +76,11 @@ void World::GenerateHeightMap()
 
 	FastNoiseLite biomeNoise;
 	biomeNoise.SetNoiseType(FastNoiseLite::NoiseType_Cellular);
+	biomeNoise.SetSeed(1);
 	biomeNoise.SetCellularDistanceFunction(FastNoiseLite::CellularDistanceFunction_Hybrid);
 	biomeNoise.SetCellularReturnType(FastNoiseLite::CellularReturnType_CellValue);
 	biomeNoise.SetFrequency(0.0075);
-
+	
 	biomeNoise.SetCellularJitter(1);
 	biomeNoise.SetDomainWarpType(FastNoiseLite::DomainWarpType_OpenSimplex2);
 	biomeNoise.SetDomainWarpAmp(100);
@@ -165,11 +166,13 @@ void World::GenerateHeightMap()
 
 			//noise = value*0.8 + perlin * 0.1 + 0.1;
 
+
+			if (blocksHeightMap[x][z].first < 0)		blocksHeightMap[x][z].first = 1;
+			if (blocksHeightMap[x][z].first > HEIGHT)	blocksHeightMap[x][z].first = HEIGHT;
+
 			blocksHeightMap[x][z].first = (noise)*HEIGHT;
 			blocksHeightMap[x][z].second = type;
 
-			if (blocksHeightMap[x][z].first < 0) blocksHeightMap[x][z].first = 1;
-			if (blocksHeightMap[x][z].first > HEIGHT) blocksHeightMap[x][z].first = HEIGHT;
 		}
 
 
@@ -277,6 +280,7 @@ void World::Generate3DBlocks()
 			blocksData[x][y][z] = Block(false, glm::vec3(x, y, z), water);
 			blocksData[x][y][z].isTransparent = true;
 		}
+	
 	}
 }
 
@@ -286,7 +290,7 @@ void World::GrowTree(glm::vec3 pos) {
 	int y = pos.y;
 	int z = pos.z;
 	
-	if (x < 1 || x < HEIGHT - 1 || z < 1 || z < HEIGHT - 1) return;
+	if (x < 1 || x > WIDTH*range - 2 || z < 1 || z > WIDTH * range - 2) return;
 
 	blocksData[x][y][z] = Block(true, glm::vec3(x, y, z), dirt);
 	blocksData[x][y + 1][z] = Block(true, glm::vec3(x, y + 1, z), dirt);
@@ -311,7 +315,6 @@ void World::GrowTree(glm::vec3 pos) {
 	{
 			blocksData[x + i][y + 3][z + k] = Block(true, glm::vec3(x + i, y + 3, z + k), grass);
 	}
-	
 }
 
 void World::Draw(Shader& shader, Shader& waterShader, Camera& camera)

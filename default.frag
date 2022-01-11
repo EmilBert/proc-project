@@ -41,8 +41,8 @@ void main()
 	vec3 white = vec3(1,1,1);
 	vec3 black = vec3(0.5,0.5,0.5);
 
-	//vec3 fcolor;
-	//fcolor = mix(black, white, smoothstep(0.0, 0.5, posy));
+	vec3 fcolor;
+	fcolor = mix(black, white, smoothstep(0.0, 0.3, posy));
 
 	
 	vec3 color1 = vec3(0.43,0.44,0.45);
@@ -52,24 +52,19 @@ void main()
 	vec3 color5 = vec3(1,1,1);
 	vec3 color6 = vec3(1,1,1);
 
-	vec3 fcolor;
-
+	//vec3 fcolor;
+	/*
 	fcolor = mix(color1, color2, smoothstep(0.0, 0.2, posy));
 	fcolor = mix(fcolor, color3, smoothstep(0.2, 0.4, posy));
 	fcolor = mix(fcolor, color4, smoothstep(0.4, 0.6, posy));
 	fcolor = mix(fcolor, color5, smoothstep(0.6, 0.7, posy));
 	fcolor = mix(fcolor, color6, smoothstep(0.7, 1,	  posy));
-	
-
-	//vec3 fcolor = mix(black, white, smoothstep(0, 0.4, posy));
+	*/
 
 	// outputs final color
 	float lighting =(diffuse + ambient + specular);
 	
-	FragColor = vec4(color * lighting, 1.0f)* lightColor;
-	
-	
-
+	FragColor = vec4(color * lighting * fcolor, 1.0f)* lightColor;
 	//*fcolor
 
 }
