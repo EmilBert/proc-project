@@ -23,18 +23,18 @@ public:
 
 	GLuint index_depth = 0;
 	
-	Block blocks[WIDTH][HEIGHT][WIDTH];
+
 	Mesh chunkMesh;
 	Mesh waterMesh;
+	
+	int worldRange;
 	glm::vec3 position;
+	
+	std::vector<std::vector<std::vector<Block>>> &blocks;
 
 public:
-	Chunk(glm::vec3 pos);
-	Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<bool>>>& data);
-	Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<Block>>>& data);
-	Chunk(Block data[WIDTH][HEIGHT][WIDTH]);
-
-
+	Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<Block>>>& data, int range);
+	
 	void GenerateMesh();
 	void GenerateWaterMesh();
 	void ExtractFace(Vertex vertices[], Block data, std::vector<Vertex>& verts, std::vector<GLuint>& inds);

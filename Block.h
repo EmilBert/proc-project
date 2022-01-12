@@ -26,13 +26,13 @@ class Block
 {
 public:
 	//int type;
-	glm::vec3 position;
-	glm::vec3 color;
-	bool isSolid;
-	bool isTransparent;
+	glm::vec3 position	= glm::vec3(0,0,0);
+	glm::vec3 color		= glm::vec3(0,0,0);
+	bool isSolid		= false;
+	bool isTransparent	= false;
 
 public:
-	Block();
-	Block(bool solid, glm::vec3 pos, glm::vec3 col);
+	Block(){};
+	Block(bool solid, glm::vec3 pos, glm::vec3 col) : isSolid(solid), isTransparent(false), position(pos), color(col) {}
 };
 

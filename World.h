@@ -26,6 +26,7 @@ public:
 	static glm::vec3 ice;
 	static glm::vec3 snow;
 	static glm::vec3 clay;
+	static glm::vec3 claydark;
 	static glm::vec3 water;
 	static glm::vec3 dirt;
 
@@ -39,6 +40,7 @@ public:
 
 	void GenerateHeightMap();
 	void Generate3DBlocks();
+	void InsertBlock(Block in);
 
 	void GrowTree(glm::vec3 pos);
 
