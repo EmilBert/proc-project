@@ -23,7 +23,6 @@ public:
 
 	GLuint index_depth = 0;
 	
-
 	Mesh chunkMesh;
 	Mesh waterMesh;
 	

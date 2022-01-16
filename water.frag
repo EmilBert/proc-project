@@ -8,11 +8,6 @@ out vec4 FragColor;
 in vec3 crntPos;
 in vec3 Normal;
 in vec3 color;
-//in vec2 texCoord;
-
-//uniform sampler2D tex0;
-//uniform vec4 lightColor;
-//uniform vec3 lightPos;
 
 uniform vec3 camPos;
 
@@ -36,33 +31,6 @@ void main()
 	float	specAmount			= pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
 	float	specular			= specAmount * specularLight;
 	
-
-	float posy = crntPos.y/6.4;
-	vec3 white = vec3(1,1,1);
-	vec3 black = vec3(0.5,0.5,0.5);
-
-	//vec3 fcolor;
-	//fcolor = mix(black, white, smoothstep(0.0, 0.5, posy));
-
-	
-	vec3 color1 = vec3(0.43,0.44,0.45);
-	vec3 color2 = vec3(0.761, 0.698, 0.502);
-	vec3 color3 = vec3(0,0.6,0);
-	vec3 color4 = vec3(0.0,0.8,0.0);
-	vec3 color5 = vec3(1,1,1);
-	vec3 color6 = vec3(1,1,1);
-
-	vec3 fcolor;
-
-	fcolor = mix(color1, color2, smoothstep(0.0, 0.2, posy));
-	fcolor = mix(fcolor, color3, smoothstep(0.2, 0.4, posy));
-	fcolor = mix(fcolor, color4, smoothstep(0.4, 0.6, posy));
-	fcolor = mix(fcolor, color5, smoothstep(0.6, 0.7, posy));
-	fcolor = mix(fcolor, color6, smoothstep(0.7, 1,	  posy));
-	
-
-	//vec3 fcolor = mix(black, white, smoothstep(0, 0.4, posy));
-
 	// outputs final color
 	float lighting =(diffuse + ambient + specular);
 

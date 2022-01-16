@@ -16,15 +16,11 @@ glm::vec3 World::dirt	= glm::vec3(0.3, 0.2, 0.2);
 
 World::World()
 {
-	World(3);
+	World(3, 0);
 }
 
-World::World(int r) 
+World::World(int r, int seed) : range(r), noise_seed(seed)
 {
-	range = r;
-
-	chunks.reserve(range * range);
-
 	blocksHeightMap = std::vector<std::vector<std::pair<int, BiomeType> >>(range * WIDTH, std::vector<std::pair<int, BiomeType>> (range * WIDTH, std::pair<int,BiomeType>(1, hills)));
 	blocksData		= std::vector<std::vector<std::vector<Block>>>(range * WIDTH, std::vector<std::vector<Block>>(HEIGHT, std::vector<Block>(range * WIDTH, Block())));
 	
@@ -32,8 +28,6 @@ World::World(int r)
 	std::cout << "Done with Heightmap!" << std::endl;
 	Generate3DBlocks();
 	std::cout << "Done with 3D Grid!" << std::endl;
-
-
 
 	for (size_t x = 0; x < range; x++) {
 		for (size_t z = 0; z < range; z++) {
@@ -82,7 +76,7 @@ void World::GenerateHeightMap()
 
 	FastNoiseLite biomeNoise;
 	biomeNoise.SetNoiseType(FastNoiseLite::NoiseType_Cellular);
-	biomeNoise.SetSeed(69);
+	biomeNoise.SetSeed(noise_seed);
 	biomeNoise.SetCellularDistanceFunction(FastNoiseLite::CellularDistanceFunction_Hybrid);
 	biomeNoise.SetCellularReturnType(FastNoiseLite::CellularReturnType_CellValue);
 	biomeNoise.SetFrequency(0.0075);
@@ -165,10 +159,8 @@ void World::GenerateHeightMap()
 
 			else if (biome > 0.4) { // Mesa
 				float perlin  = (perlinMesaNoise.GetNoise((float)x, (float)z) + 1) / 2;
-				
 				noise = perlin * 0.9;
-
-				if (noise > 0.5) noise += 0.25;
+				if (noise > 0.55) noise += 0.30;
 				type = mesa;
 			}
 
@@ -186,11 +178,12 @@ void World::GenerateHeightMap()
 			}
 
 			//noise = value*0.8 + perlin * 0.1 + 0.1;
-			if (blocksHeightMap[x][z].first < 0)		blocksHeightMap[x][z].first = 1;
-			if (blocksHeightMap[x][z].first > HEIGHT)	blocksHeightMap[x][z].first = HEIGHT;
 
 			blocksHeightMap[x][z].first = (noise)*HEIGHT;
 			blocksHeightMap[x][z].second = type;
+			
+			if (blocksHeightMap[x][z].first < 0)		blocksHeightMap[x][z].first = 1;
+			if (blocksHeightMap[x][z].first > HEIGHT)	blocksHeightMap[x][z].first = HEIGHT;
 
 		}
 
@@ -225,6 +218,14 @@ void World::Generate3DBlocks()
 	MountainIceNoise.SetCellularReturnType(FastNoiseLite::CellularReturnType_CellValue);
 	MountainIceNoise.SetFrequency(0.1);
 
+	FastNoiseLite caveNoise;
+	caveNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+	caveNoise.SetFractalType(FastNoiseLite::FractalType_Ridged);
+	caveNoise.SetFractalOctaves(2);
+	caveNoise.SetSeed(noise_seed);
+	caveNoise.SetFrequency(0.010);
+
+
 	for (size_t x = 0; x < WIDTH * range; x++)
 	for (size_t z = 0; z < WIDTH * range; z++)
 	{
@@ -233,6 +234,8 @@ void World::Generate3DBlocks()
 		
 		for (; y < blocksHeightMap[x][z].first; y++)
 		{
+			if (y > 5 &&  caveNoise.GetNoise((float)x, (float)y, (float)z) > 0.9) continue;
+			
 			blocksData[x][y][z]  = Block(true, glm::vec3(x, y, z), stone);
 		}
 
@@ -248,7 +251,6 @@ void World::Generate3DBlocks()
 			blocksData[x][y - 3][z].color = dirt;
 			blocksData[x][y - 4][z].color = dirt;
 			break;
-
 		case desert:
 			blockColor = sand;
 			for (int k = y; k > y - 10; k--) {
@@ -274,8 +276,8 @@ void World::Generate3DBlocks()
 						blocksData[x][k][z].color = claydark;
 						continue;
 					}
-				}
 
+				}
 
 				blocksData[x][k][z].color = blockColor;
 			}
@@ -301,9 +303,9 @@ void World::Generate3DBlocks()
 			blockColor = snow;
 			if (MountainIceNoise.GetNoise((float)x, (float)z) > 0.5 && y > 80) blockColor = ice;
 			blocksData[x][y - 1][z].color = blockColor;
-			blocksData[x][y - 2][z].color = blockColor;
-			blocksData[x][y - 3][z].color = dirt;
-			blocksData[x][y - 4][z].color = dirt;
+			blocksData[x][y - 2][z].color = dirt;
+			blocksData[x][y - 3][z].color = stone;
+			blocksData[x][y - 4][z].color = stone;
 			
 			break;
 
@@ -317,27 +319,20 @@ void World::Generate3DBlocks()
 			break;
 		}
 
-
-
-
-
 		// Add ocean
 		for (; y < 20; y++)
 		{
 			blocksData[x][y][z] = Block(false, glm::vec3(x, y, z), water);
 			blocksData[x][y][z].isTransparent = true;
 		}
-	
 	}
 }
 
 void World::InsertBlock(Block in)
 {
-	//std::cout << "INSERT BLOCK" << std::endl;
 	int x = in.position.x;
 	int y = in.position.y;
 	int z = in.position.z;
-
 	blocksData[x][y][z] = in;
 }
 

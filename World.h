@@ -33,17 +33,17 @@ public:
 	// Storage of chunks
 	std::vector<Chunk> chunks;
 	int range;
+	int noise_seed;
 
 public:
 	World();
-	World(int range);
+	World(int range, int seed);
 
 	void GenerateHeightMap();
 	void Generate3DBlocks();
 	void InsertBlock(Block in);
 
 	void GrowTree(glm::vec3 pos);
-
 	void Draw(Shader& shader, Shader& waterShader, Camera& camera);
 };
 
