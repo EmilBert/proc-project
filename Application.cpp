@@ -22,8 +22,8 @@
 */
 
 //Screen constants (in pixels)
-const unsigned int width	= 1600;
-const unsigned int height	= 1000;
+const unsigned int width	= 1920;
+const unsigned int height	= 1080;
 
 //Amount of Chunks (will be multiplied to the power of 2)
 const int chunk_count		= 3;
@@ -107,7 +107,7 @@ int main()
 		
 		// Updates and exports the camera matrix to the Vertex Shader
 		camera.updateMatrix(45.0f, 0.1f, 100.0f);
-		glLoadIdentity();
+		//glLoadIdentity();
 		
 		world.Draw(terrainShader, waterShader, camera);
 		// Swap the back buffer with the front buffer

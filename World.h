@@ -1,17 +1,18 @@
 #pragma once
 #include "Chunk.h"
 #include "Block.h"
+#include "GeneratedNoise.h"
 
-enum BiomeType
-{
-	hills = 0,
-	desert = 1,
-	mesa = 2,
-	glacier = 3,
-	forest = 4,
-	mountains = 5,
-	ocean = 6
-};
+//enum BiomeType
+//{
+//	hills = 0,
+//	desert = 1,
+//	mesa = 2,
+//	glacier = 3,
+//	forest = 4,
+//	mountains = 5,
+//	ocean = 6
+//};
 
 class World
 {
@@ -32,6 +33,7 @@ public:
 
 	// Storage of chunks
 	std::vector<Chunk> chunks;
+	GeneratedNoise generatedNoise;
 	int range;
 	int noise_seed;
 
@@ -42,6 +44,7 @@ public:
 	void GenerateHeightMap();
 	void Generate3DBlocks();
 	void InsertBlock(Block in);
+	void GenerateChunkHeight(int start_x, int start_z, int size);
 
 	void GrowTree(glm::vec3 pos);
 	void Draw(Shader& shader, Shader& waterShader, Camera& camera);

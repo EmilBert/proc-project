@@ -61,8 +61,6 @@ GLuint Chunk::face_inds[] =
 };
 
 
-
-
 Chunk::Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<Block>>>& data, int range) : blocks(data), worldRange(range) {
 	
 	position = { WIDTH * pos.x, pos.y, WIDTH * pos.z };
@@ -79,14 +77,13 @@ void Chunk::ExtractFace(Vertex vertices[], Block data ,std::vector<Vertex> &vert
 {
 	glm::mat4 model = glm::mat4(1.0f);
 
-
 	model = glm::translate(model, -position + glm::vec3(data.position.x, data.position.y, data.position.z));
 
 	for (size_t i = 0; i < 4; i++)
 	{
 		auto vp		= model * glm::vec4(vertices[i].vertices, 1);
 		Vertex v	= vertices[i];
-		v.vertices	= vp;
+		v.vertices	= (glm::vec3)vp;
 		v.color		= data.color;
 		verts.push_back(v);
 	}
@@ -124,24 +121,34 @@ void Chunk::GenerateMesh()
 		if (current->isSolid) 
 		{
 			//Check right and left
-			if (x_start < 1 || !blocks[x - 1][y][z].isSolid) {
+			if (x_start < 1 || !blocks[x - 1][y][z].isSolid) 
+			{
 				ExtractFace(left_verts, blocks[x][y][z], verts, inds);
 			}
-			if (x >  worldRange * WIDTH-2 || !blocks[x + 1][y][z].isSolid)	{
+
+			if (x >  worldRange * WIDTH-2 || !blocks[x + 1][y][z].isSolid)	
+			{
 				ExtractFace(right_verts, blocks[x][y][z], verts, inds);
 			}
+
 			//Check top and bottom
-			if (y < 1 || !blocks[x][y - 1][z].isSolid){
+			if (y < 1 || !blocks[x][y - 1][z].isSolid)
+			{
 				ExtractFace(bottom_verts, blocks[x][y][z], verts, inds);
 			}
-			if (y > HEIGHT-2 || !blocks[x][y + 1][z].isSolid)	{
+
+			if (y > HEIGHT-2 || !blocks[x][y + 1][z].isSolid)	
+			{
 				ExtractFace(top_verts, blocks[x][y][z], verts, inds);
 			}
 			//Check front and back
-			if (z_start < 1 || !blocks[x][y][z - 1].isSolid) {
+			if (z_start < 1 || !blocks[x][y][z - 1].isSolid) 
+			{
 				ExtractFace(back_verts, blocks[x][y][z], verts, inds);
 			}
-			if (z > worldRange * WIDTH - 2 || !blocks[x][y][z + 1].isSolid) {
+
+			if (z > worldRange * WIDTH - 2 || !blocks[x][y][z + 1].isSolid) 
+			{
 				ExtractFace(front_verts, blocks[x][y][z], verts, inds);
 			}
 		}
@@ -153,7 +160,6 @@ void Chunk::GenerateMesh()
 
 void Chunk::GenerateWaterMesh()
 {	
-
 	std::vector<Vertex> verts;
 	std::vector<GLuint> inds;
 
@@ -176,6 +182,7 @@ void Chunk::GenerateWaterMesh()
 				ExtractFace(right_verts, blocks[x][y][z], verts, inds);
 			}
 			//Check top and bottom
+			// Removed bc water becomes weird
 			/*if (y < 1 || !blocks[x][y - 1][z].isTransparent || !blocks[x][y - 1][z].isSolid) {
 				ExtractFace(bottom_verts, blocks[x][y][z], verts, inds);
 			}*/
