@@ -3,6 +3,10 @@
 #include <string>
 #include <vector>
 #include"Mesh.h"
+
+const int WIDTH = 16;
+const int HEIGHT = 128;
+
 /*
 	  y
 	  |

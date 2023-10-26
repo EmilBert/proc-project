@@ -1,9 +1,8 @@
 #pragma once
 #include <FastNoise/FastNoiseLite.h>
+#include "Block.h"
 #include <thread>
 #include <string>
-
-
 
 enum BiomeType
 {
@@ -15,6 +14,7 @@ enum BiomeType
 	mountains = 5,
 	ocean = 6
 };
+
 class GeneratedNoise
 {
 public:
@@ -23,10 +23,10 @@ public:
 	GeneratedNoise(int seed);
 
 	// Get noise at x z
-	std::pair<int, BiomeType> GetHeight(int x, int z, int maxHeight);
+	std::pair<int, BiomeType> GetHeightAndBiome(int x, int z);
 
-	// Get noise at x y z
-	bool GetNoise(int x, int y, int z);
+	// Return a generated chunk
+	void GenerateChunkBlocks(int start_x, int start_y, Block blocks[][HEIGHT][WIDTH]);
 
 private:
 	// Noise for each biome
@@ -41,5 +41,19 @@ private:
 	FastNoiseLite perlinMountainsNoise;
 	FastNoiseLite cellularMountainsNoise;
 	FastNoiseLite perlinMesaNoise;
+	FastNoiseLite MountainIceNoise;
+	FastNoiseLite caveNoise;
+
+	static glm::vec3 sand;
+	static glm::vec3 moss;
+	static glm::vec3 grass;
+	static glm::vec3 stone;
+	static glm::vec3 ice;
+	static glm::vec3 snow;
+	static glm::vec3 clay;
+	static glm::vec3 claydark;
+	static glm::vec3 water;
+	static glm::vec3 dirt;
+
 };
 

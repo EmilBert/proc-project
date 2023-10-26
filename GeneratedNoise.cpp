@@ -1,5 +1,16 @@
 #include "GeneratedNoise.h"
 
+glm::vec3 GeneratedNoise::sand = glm::vec3(0.76, 0.69, 0.5);
+glm::vec3 GeneratedNoise::grass = glm::vec3(0.0, 0.40f, 0.09);
+glm::vec3 GeneratedNoise::moss = glm::vec3(0.04, 0.32f, 0.07);
+glm::vec3 GeneratedNoise::stone = glm::vec3(0.392, 0.392, 0.392);
+glm::vec3 GeneratedNoise::snow = glm::vec3(0.8, 0.8, 1.0);
+glm::vec3 GeneratedNoise::ice = glm::vec3(0.4, 0.6, 1.0);
+glm::vec3 GeneratedNoise::clay = glm::vec3(0.70, 0.40, 0.15);
+glm::vec3 GeneratedNoise::claydark = glm::vec3(0.50, 0.25, 0.10);
+glm::vec3 GeneratedNoise::water = glm::vec3(0.2, 0.2, 1.0);
+glm::vec3 GeneratedNoise::dirt = glm::vec3(0.3, 0.2, 0.2);
+
 
 GeneratedNoise::GeneratedNoise()
 {
@@ -75,9 +86,20 @@ GeneratedNoise::GeneratedNoise(int seed)
 	perlinMesaNoise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 	perlinMesaNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
 	perlinMesaNoise.SetFrequency(0.010);
+
+	MountainIceNoise.SetNoiseType(FastNoiseLite::NoiseType_Cellular);
+	MountainIceNoise.SetCellularDistanceFunction(FastNoiseLite::CellularDistanceFunction_Hybrid);
+	MountainIceNoise.SetCellularReturnType(FastNoiseLite::CellularReturnType_CellValue);
+	MountainIceNoise.SetFrequency(0.1);
+
+	caveNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
+	caveNoise.SetFractalType(FastNoiseLite::FractalType_Ridged);
+	caveNoise.SetFractalOctaves(2);
+	caveNoise.SetSeed(seed);
+	caveNoise.SetFrequency(0.010);
 }
 
-std::pair<int, BiomeType> GeneratedNoise::GetHeight(int x, int z, int maxHeight)
+std::pair<int, BiomeType> GeneratedNoise::GetHeightAndBiome(int x, int z)
 {
 	float xf = x;
 	float zf = z;
@@ -135,11 +157,30 @@ std::pair<int, BiomeType> GeneratedNoise::GetHeight(int x, int z, int maxHeight)
 		type = ocean;
 	}
 
-	int finalVal = noise * maxHeight;
+	int finalVal = noise * HEIGHT;
 
 	finalVal = (finalVal < 1) ? 1 : finalVal;
-	finalVal = (finalVal > maxHeight) ? maxHeight : finalVal;
+	finalVal = (finalVal > HEIGHT) ? HEIGHT : finalVal;
 		
 
 	return std::pair<int, BiomeType>(finalVal,type);
+}
+
+void GeneratedNoise::GenerateChunkBlocks(int start_x, int start_y, Block (*blocks)[HEIGHT][WIDTH])
+{
+	for(int x = 0; x < WIDTH;  x++)
+	for(int z = 0; z < WIDTH;  z++)
+	for(int y = 0; y < HEIGHT; y++)
+	{
+		std::pair<int, BiomeType> heightAndBiome = GetHeightAndBiome(x + start_x, z + start_y);
+
+		if(y <= heightAndBiome.first)
+		{
+			blocks[x][y][z] = Block(true, glm::vec3(x, y, z), stone);
+		}
+		else
+		{
+			blocks[x][y][z] = Block(false, glm::vec3(x, y, z), stone);
+		}
+	}
 }

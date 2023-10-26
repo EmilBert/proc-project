@@ -60,14 +60,6 @@ GLuint Chunk::face_inds[] =
 	3, 2, 1
 };
 
-
-Chunk::Chunk(glm::vec3 pos, std::vector<std::vector<std::vector<Block>>>& data, int range) : blocks(data), worldRange(range) {
-	
-	position = { WIDTH * pos.x, pos.y, WIDTH * pos.z };
-
-	GenerateMesh();
-}
-
 //vertices = std::vector<Vertex>(block_vertices, block_vertices + sizeof(block_vertices) / sizeof(Vertex));
 //indices = std::vector<GLuint>(block_indices, block_indices + sizeof(block_indices) / sizeof(GLuint));
 
@@ -77,7 +69,7 @@ void Chunk::ExtractFace(Vertex vertices[], Block data ,std::vector<Vertex> &vert
 {
 	glm::mat4 model = glm::mat4(1.0f);
 
-	model = glm::translate(model, -position + glm::vec3(data.position.x, data.position.y, data.position.z));
+	model = glm::translate(model, glm::vec3(data.position.x, data.position.y, data.position.z));
 
 	for (size_t i = 0; i < 4; i++)
 	{
@@ -95,67 +87,67 @@ void Chunk::ExtractFace(Vertex vertices[], Block data ,std::vector<Vertex> &vert
 	index_depth += 4;
 }
 
-// Generate a mesh and store it in the chunkMesh member variable
-void Chunk::GenerateMesh()
+Chunk::Chunk(){ }
+
+Chunk::Chunk(int chunkCoord_x, int chunkCoord_z, GeneratedNoise noise)
 {
+	chunkPosition = glm::vec2(chunkCoord_x, chunkCoord_z);
+	position = glm::vec3(chunkCoord_x * WIDTH, 0, chunkCoord_z * WIDTH);
+	noise.GenerateChunkBlocks(chunkCoord_x*WIDTH, chunkCoord_z*WIDTH, blocks);
+}
 
-	std::vector<Vertex> verts;
-	std::vector<GLuint> inds;
-
+// Generate a mesh and store it in the chunkMesh member variable 
+void Chunk::GenerateMesh(Chunk* leftChunk, Chunk* rightChunk, Chunk* infrontChunk, Chunk* behindChunk)
+{
 	int x_start = position.x;
 	int z_start = position.z;
 
 	index_depth = 0;
+	for (size_t x = 0; x < WIDTH;  x++)
 	for (size_t y = 0; y < HEIGHT; y++)
-	for (size_t x = x_start; x < x_start + WIDTH; x++)
-	for (size_t z = z_start; z < z_start + WIDTH; z++)
+	for (size_t z = 0; z < WIDTH;  z++)
 	{
-
 		Block *current = &blocks[x][y][z];
 		
-		/*std::cout << "x:" << x << std::endl;
-		std::cout << "y:" << y<< std::endl;
-		std::cout << "z:" << z <<std::endl;*/
-
 		// Is this Block solid?
-		if (current->isSolid) 
+		if (current->isSolid)
 		{
-			//Check right and left
-			if (x_start < 1 || !blocks[x - 1][y][z].isSolid) 
-			{
-				ExtractFace(left_verts, blocks[x][y][z], verts, inds);
-			}
-
-			if (x >  worldRange * WIDTH-2 || !blocks[x + 1][y][z].isSolid)	
-			{
-				ExtractFace(right_verts, blocks[x][y][z], verts, inds);
-			}
-
 			//Check top and bottom
 			if (y < 1 || !blocks[x][y - 1][z].isSolid)
 			{
 				ExtractFace(bottom_verts, blocks[x][y][z], verts, inds);
 			}
-
-			if (y > HEIGHT-2 || !blocks[x][y + 1][z].isSolid)	
+			if (y >= HEIGHT - 1 || !blocks[x][y + 1][z].isSolid)
 			{
 				ExtractFace(top_verts, blocks[x][y][z], verts, inds);
 			}
-			//Check front and back
-			if (z_start < 1 || !blocks[x][y][z - 1].isSolid) 
+
+			//Check left, if at edge, check neighbor if they aren't null
+			if ((x > 0 && !blocks[x - 1][y][z].isSolid) || (x == 0 && leftChunk != nullptr && !leftChunk->blocks[WIDTH-1][y][z].isSolid))
+			{
+				ExtractFace(left_verts, blocks[x][y][z], verts, inds);
+			}
+			
+			//Check right, if at edge, check neighbor if they aren't null
+			if ((x < WIDTH-1 && !blocks[x + 1][y][z].isSolid) || (x == WIDTH-1 && rightChunk != nullptr && !rightChunk->blocks[0][y][z].isSolid))
+			{
+				ExtractFace(right_verts, blocks[x][y][z], verts, inds);
+			}
+			//Check behind, if at edge, check neighbor if they aren't null
+			if ((z > 0 && !blocks[x][y][z - 1].isSolid) || (z == 0 && behindChunk != nullptr && !behindChunk->blocks[x][y][WIDTH - 1].isSolid))
 			{
 				ExtractFace(back_verts, blocks[x][y][z], verts, inds);
 			}
 
-			if (z > worldRange * WIDTH - 2 || !blocks[x][y][z + 1].isSolid) 
+			//Check infront,  if at edge, check neighbor if they aren't null
+			if ((z < WIDTH - 1 && !blocks[x][y][z + 1].isSolid) || (z == WIDTH - 1 && infrontChunk != nullptr && !infrontChunk->blocks[x][y][0].isSolid))
 			{
 				ExtractFace(front_verts, blocks[x][y][z], verts, inds);
 			}
 		}
 	}
-
 	chunkMesh = Mesh(verts, inds, position);
-	GenerateWaterMesh();
+	regenMesh = false;
 }
 
 void Chunk::GenerateWaterMesh()
@@ -166,10 +158,9 @@ void Chunk::GenerateWaterMesh()
 	int x_start = position.x;
 	int z_start = position.z;
 
-	index_depth = 0;
-	for (size_t y = 0; y < HEIGHT; y++)
 	for (size_t x = x_start; x < x_start + WIDTH; x++)
 	for (size_t z = z_start; z < z_start + WIDTH; z++)
+	for (size_t y = 0;		 y < HEIGHT;		  y++)
 	{
 		// Is this Block transparent?
 		if (blocks[x][y][z].isTransparent)
@@ -178,10 +169,10 @@ void Chunk::GenerateWaterMesh()
 			if (x < 1) {
 				ExtractFace(left_verts, blocks[x][y][z], verts, inds);
 			}
-			if (x > worldRange* WIDTH - 2) {
+			if (x >  WIDTH - 2) {
 				ExtractFace(right_verts, blocks[x][y][z], verts, inds);
 			}
-			//Check top and bottom
+			// Check top and bottom
 			// Removed bc water becomes weird
 			/*if (y < 1 || !blocks[x][y - 1][z].isTransparent || !blocks[x][y - 1][z].isSolid) {
 				ExtractFace(bottom_verts, blocks[x][y][z], verts, inds);
@@ -193,7 +184,7 @@ void Chunk::GenerateWaterMesh()
 			if (z < 1 ) {
 				ExtractFace(back_verts, blocks[x][y][z], verts, inds);
 			}
-			if (z > worldRange* WIDTH - 2 ) {
+			if (z > WIDTH - 2 ) {
 				ExtractFace(front_verts, blocks[x][y][z], verts, inds);
 			}
 		}
@@ -201,7 +192,6 @@ void Chunk::GenerateWaterMesh()
 	}
 	waterMesh = Mesh(verts, inds, position);
 }
-
 
 void Chunk::Draw(Shader & shader, Camera & camera)
 {
@@ -212,7 +202,4 @@ void Chunk::DrawWater(Shader& shader, Camera& camera)
 {
 	waterMesh.Draw(shader, camera);
 }
-
-
-
 
