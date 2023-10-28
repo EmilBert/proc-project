@@ -2,6 +2,9 @@
 #include "Chunk.h"
 #include "Block.h"
 #include "GeneratedNoise.h"
+#include <map>
+#include <queue>
+#include <thread>
 
 class World
 {
@@ -17,19 +20,29 @@ public:
 	static glm::vec3 water;
 	static glm::vec3 dirt;
 
+
+
 	// Storage of chunks
-	std::vector<std::vector<Chunk>> chunksToRender;
+	std::vector<glm::vec2> relativeIndex;
+	std::map<std::pair<int, int>, Chunk*> chunkMap;
+	
+	bool rendering = false;
+	std::thread* renderThread;
+	std::queue<Chunk*> renderQueue;
+	
+	
 	GeneratedNoise generatedNoise;
 	int range;
+	int radius;
 	int noise_seed;
 
-	glm::vec2 cameraChunkCoord = {0, 0};
+	glm::vec2 lastCameraPos = {0, 0};
 
 public:
 	World();
 	World(int range, int seed);
-	void GenerateChunkMesh(int x, int z, Chunk& chunk);
 	void UpdateChunksToRender(glm::vec3 camPos);
+	void GenerateChunkMeshes();
 	void Draw(Shader& shader, Shader& waterShader, Camera& camera);
 };
 

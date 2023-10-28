@@ -1,6 +1,8 @@
 #include "World.h"
 #include <FastNoise/FastNoiseLite.h>
 #include <iostream>
+#include <thread>
+#include <atomic>
 
 glm::vec3 World::sand	= glm::vec3(0.76, 0.69, 0.5);
 glm::vec3 World::grass	= glm::vec3(0.0, 0.40f, 0.09);
@@ -13,29 +15,22 @@ glm::vec3 World::claydark = glm::vec3(0.50, 0.25, 0.10);
 glm::vec3 World::water	= glm::vec3(0.2, 0.2, 1.0);
 glm::vec3 World::dirt	= glm::vec3(0.3, 0.2, 0.2);
 
-World::World()
+World::World(){}
+
+World::World(int r, int seed) : radius(r), range(r * 2 + 1), noise_seed(seed)
 {
-	World(3, 0);
-}
+	generatedNoise = GeneratedNoise(seed);
 
-	//[0,4][1,4][2,4][3,4][4,4]
-	//[0,3][1,3][2,3][3,3][4,3]
-	//[0,2][1,2][2,2][3,2][4,2]
-	//[0,1][1,1][2,1][3,1][4,1]
-	//[0,0][1,0][2,0][3,0][4,0]
-
-World::World(int r, int seed) : range(r), noise_seed(seed)
-{
-	chunksToRender = std::vector<std::vector<Chunk>>(range, std::vector<Chunk>(range));
-
-	for (size_t x = 0; x < range; x++)
+	for (int x = -radius; x < radius; x++)
 	{
-		for (size_t z = 0; z < range; z++)
+		for (int z = -radius; z < radius; z++)
 		{
-			chunksToRender[x][z] = Chunk(x, z, generatedNoise);
+			std::cout << x << " " << z << "\n";
+			relativeIndex.push_back(glm::vec2(x, z));
 		}
 	}
 }
+			//chunkMap.insert(std::make_pair(std::make_pair(x,z), new Chunk(glm::vec2(x, z), generatedNoise)));
 
 /*
 void World::Generate3DBlocks()
@@ -183,57 +178,73 @@ void World::Generate3DBlocks()
 //	blocksData[x][y + 5][z]		= Block(true,	glm::vec3(x, y + 5, z),		grass);
 //}
 
-void World::GenerateChunkMesh(int x, int z, Chunk& chunk)
-{
-	Chunk* left		 = (x == 0)			? nullptr : &chunksToRender[x - 1][z];
-	Chunk* right	 = (x == range-1)	? nullptr : &chunksToRender[x + 1][z];
-	Chunk* behind	 = (z == 0)			? nullptr : &chunksToRender[x][z - 1];
-	Chunk* infront   = (z == range-1)	? nullptr : &chunksToRender[x][z + 1];
-
-	chunk.GenerateMesh(left, right, infront, behind);
-}
-
-void World::UpdateChunksToRender(glm::vec3 camPos)
-{
-	int chunkPosX = camPos.x;
-	int chunkPosZ = camPos.z;
-
-	Chunk newChunk(chunkPosX, chunkPosZ, generatedNoise);
-	chunksToRender[0][0] = newChunk;
-
-}
-
-//void World::PositionToChunk(glm::vec3)
+//void World::GenerateChunkMesh(int x, int z, Chunk& chunk)
 //{
+//	Chunk* left		 = (x == 0)			? nullptr : &chunksToRender[x - 1][z];
+//	Chunk* right	 = (x == range-1)	? nullptr : &chunksToRender[x + 1][z];
+//	Chunk* behind	 = (z == 0)			? nullptr : &chunksToRender[x][z - 1];
+//	Chunk* infront   = (z == range-1)	? nullptr : &chunksToRender[x][z + 1];
 //
+//	chunk.GenerateMesh(left, right, infront, behind);
 //}
 
-//void PositionToBlock(){ }
+
+// The chunkMap should be updated to contain chunks within the radius of the camera
+// If they are outside of that radius they should be removed.
+void World::UpdateChunksToRender(glm::vec3 camPos)
+{
+	glm::vec2 cameraPos((int)camPos.x, (int)camPos.z);
+	if (lastCameraPos == cameraPos) return;
+	std::pair<int, int> cameraPair(camPos.x, camPos.z);
+	lastCameraPos = cameraPos;
+
+	std::map<std::pair<int, int>, Chunk*> newChunkMap;
+
+	// Check what chunks to add
+	for (glm::vec2 relationToCam : relativeIndex)
+	{
+		glm::vec2 p = lastCameraPos + relationToCam;
+
+		std::pair<int, int> pp = std::make_pair(p.x, p.y);
+
+		auto it = chunkMap.find(pp);
+
+		// Add existing to new map
+		if (it != chunkMap.end())
+		{
+			newChunkMap.insert(make_pair(it->first, it->second));
+		}
+		// Add new chunk to map
+		else
+		{
+			Chunk* newChunk = new Chunk(p, generatedNoise);
+			newChunkMap.insert(std::make_pair(pp, newChunk));
+			renderQueue.push(newChunk);
+		}
+	}
+	chunkMap.clear();
+	chunkMap = newChunkMap;
+}
+
+void World::GenerateChunkMeshes()
+{
+	if (renderQueue.empty()) return;
+	renderQueue.front()->GenerateMesh();
+	renderQueue.pop();
+}
 
 void World::Draw(Shader& shader, Shader& waterShader, Camera& camera)
 {
+	//std::thread th = std::thread(&World::UpdateChunksToRender, this, camera.Position);
 
-	//UpdateChunksToRender(camera.Position);
-	
-	//std::cout << camera.Position.x << "\n";
-	// 
-	// World needs to handle chunk meshes;
-	for(int x = 0; x < range; x++)
-	for (int z = 0; z < range; z++)
-	{
-		Chunk& chunk = chunksToRender[x][z];
-		
-		if (chunk.regenMesh) GenerateChunkMesh(x, z, chunk);
-		
-		chunk.Draw(shader, camera);
-	}
+	UpdateChunksToRender(camera.Position);
+	GenerateChunkMeshes();
 
-	/*for (int i = 0; i < chunks.size(); i++)
+	for (auto it = chunkMap.begin(); it != chunkMap.end(); it++)
 	{
-		chunks[i].Draw(shader, camera);
+		if(!it->second->regenMesh)
+		{
+			it->second->Draw(shader, camera);	
+		}
 	}
-	for (int i = 0; i < chunks.size(); i++)
-	{
-		chunks[i].DrawWater(waterShader, camera);
-	}*/
 }

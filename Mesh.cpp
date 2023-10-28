@@ -31,7 +31,7 @@ void Mesh::Draw(Shader& shader, Camera& camera)
 	VAO.Bind();
 
 	glm::mat4 model = glm::mat4(1.0f);
-	float scale = 0.1;
+	float scale = 1.0f/16.0f;
 	glm::mat4 scaleMat = glm::scale(glm::vec3(scale));
 	model = glm::translate(model, scale*position);
 

@@ -5,14 +5,6 @@
 class Chunk
 {
 public:
-	
-	// For traversal
-	int distance = 0;
-	Chunk* left = nullptr;
-	Chunk* right = nullptr;
-	Chunk* front = nullptr;
-	Chunk* back = nullptr;
-
 	// Vertex Arrays
 	static Vertex top_verts[];
 	static Vertex bottom_verts[];
@@ -26,7 +18,7 @@ public:
 	GLuint index_depth = 0;
 	
 	bool regenMesh = true;
-	Mesh chunkMesh;
+	Mesh* chunkMesh;
 	Mesh waterMesh;
 
 	std::vector<Vertex> verts;
@@ -38,11 +30,11 @@ public:
 
 public:
 	Chunk();
-	Chunk(int chunkCoord_x, int chunkCoord_z, GeneratedNoise noise);
+	Chunk(glm::vec2 cp, GeneratedNoise noise);
 
-	void GenerateMesh(Chunk* leftChunk, Chunk* rightChunk, Chunk* infrontChunk, Chunk* behindChunk);
+	void GenerateMesh();
 	void GenerateWaterMesh();
-	void ExtractFace(Vertex vertices[], Block data, std::vector<Vertex>& verts, std::vector<GLuint>& inds);
+	static void ExtractFace(Vertex vertices[], Block data, std::vector<Vertex>& verts, std::vector<GLuint>& inds, GLuint &index_depth);
 	void Draw(Shader& shader, Camera& camera);
 	void DrawWater(Shader& shader, Camera& camera);
 };
