@@ -4,9 +4,9 @@ Mesh::Mesh(){}
 
 Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices, glm::vec3 pos)
 {
-	Mesh::vertices = vertices;
-	Mesh::indices = indices;
-	position = pos;
+	this->vertices = vertices;
+	this->indices = indices;
+	this->position = pos;
 
 	VAO.Bind();
 	// Generates Vertex Buffer Object and links it to vertices
@@ -25,13 +25,14 @@ Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices, glm::vec
 	EBO.Unbind();
 }
 
+
+
 void Mesh::Draw(Shader& shader, Camera& camera)
 {
 	shader.Activate();
 	VAO.Bind();
 
 	glm::mat4 model = glm::mat4(1.0f);
-	float scale = 1.0f/16.0f;
 	glm::mat4 scaleMat = glm::scale(glm::vec3(scale));
 	model = glm::translate(model, scale*position);
 

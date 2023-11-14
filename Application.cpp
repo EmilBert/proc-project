@@ -6,6 +6,7 @@
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
+#include <thread>
 
 #include"Block.h"
 #include"Mesh.h"
@@ -20,106 +21,109 @@
 
 	Then run it!
 */
+const unsigned int SCREEN_WIDTH = 1920;
+const unsigned int SCREEN_HIEGHT = 1080;
+const int CHUNK_COUNT = 3;
+const int noise_seed = NULL;
 
-//Screen constants (in pixels)
-const unsigned int width	= 1920;
-const unsigned int height	= 1080;
 
-//Amount of Chunks (will be multiplied to the power of 2)
-const int chunk_count		= 3;
+int InputNoise()
+{
+	int noiseSeed;
+	std::cout << "-- Welcome! Please enter the following values as told for the program to run! --" << std::endl;
+	std::cout << "-- Enter seed(int) if set to -1 a random seed will be generated" << std::endl;
+	std::cin >> noiseSeed;
+	if (noiseSeed == -1) noiseSeed = (float)rand() / RAND_MAX * 1000000000;
+	return noiseSeed;
+}
 
-//Decides the seed of the noise functions
-const int noise_seed		= NULL; // If set to NULL will generate a random seed instead
+int InputRenderDistance()
+{
+	int chunkRange;
+	std::cout << "-- Enter amount of chunks to generate?(int) This value will be multipleid to power of 2" << std::endl;
+	std::cin >> chunkRange;
+	if (chunkRange == NULL) chunkRange = CHUNK_COUNT;
+	return chunkRange;
+}
+
+
+void GenThread(World* world, Camera* camera) 
+{
+	while(true)
+	{
+		world->UpdateChunksToRender(camera->Position);
+	}
+}
+
 
 
 int main()
 {
+	srand(time(NULL));
+	int noiseSeed = InputNoise();
+	int chunkRange = InputRenderDistance();
+	
 	// Initialize GLFW
 	glfwInit();
 
-	// Tell GLFW what version of OpenGL we are using 
-	// In this case we are using OpenGL 3.3
+	// Tell GLFW what version of OpenGL we are using, In this case we are using OpenGL 3.3
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	// Tell GLFW we are using the CORE profile
-	// So that means we only have the modern functions
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// Create a GLFWwindow object of 800 by 800 pixels, naming it "YoutubeOpenGL"
-	GLFWwindow* window = glfwCreateWindow(width, height, "BertCraft", NULL, NULL);
-	// Error check if the window fails to create
-	if (window == NULL)
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Tell GLFW we are using the CORE profile, So that means we only have the modern functions
+	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HIEGHT, "BertCraft", NULL, NULL);
+	
+	if (window == NULL) // Error check if the window fails to create
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
-	// Introduce the window into the current context
-	glfwMakeContextCurrent(window);
-
-	//Load GLAD so it configures OpenGL
-	gladLoadGL();
-	// Specify the viewport of OpenGL in the Window
-	// In this case the viewport goes from x = 0, y = 0, to x = 800, y = 800
-	glViewport(0, 0, width, height);
-
-	// Generates Shader object using shaders default.vert and default.frag
+	
+	glfwMakeContextCurrent(window); // Introduce the window into the current context
+	gladLoadGL();//Load GLAD so it configures OpenGL
+	glViewport(0, 0, SCREEN_WIDTH, SCREEN_HIEGHT); 
+	
 	Shader terrainShader("default.vert", "default.frag");
 	Shader waterShader("water.vert", "water.frag");
 	
-	srand(time(NULL));
-
-	std::cout << "-- Welcome! Please enter the following values as told for the program to run! --" << std::endl;
-	int noise;
-	std::cout << "-- Enter seed(int) if set to -1 a random seed will be generated" << std::endl;
-	std::cin  >> noise;
-	
-	if (noise == -1) noise = (float)rand() / RAND_MAX * 1000000000;
-	std::cout << "-- Seed: " << noise << std::endl;
-
-	int chunk;
-	std::cout << "-- Enter amount of chunks to generate?(int) This value will be multipleid to power of 2" << std::endl;
-	std::cin >> chunk;
-	if (chunk == NULL) chunk = chunk_count;
-	std::cout << "-- Inputs received! Generating terrain!" << std::endl;
-
-	World world(chunk, noise);
-
 	// Enables the Depth Buffer
-	glEnable(GL_BLEND);
-	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+	// glEnable(GL_BLEND);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
+	glEnable(GL_CULL_FACE); 
+	glCullFace(GL_BACK);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 	glEnable(GL_DEPTH_TEST);
-	// Creates camera object
-	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
+	World* world = new World(chunkRange, noiseSeed);
+	Camera* camera = new Camera(SCREEN_WIDTH, SCREEN_HIEGHT, glm::vec3(0.0f, 0.0f, 2.0f));
 
-	// Main while loop
+	std::thread t(&GenThread, world, camera);
+	std::thread t2(&World::GenerateChunkMeshes, world);
+
+	// Main thread - OpenGl here
 	while (!glfwWindowShouldClose(window))
 	{
-		// Specify the color of the background
-		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-		// Clean the back buffer and depth buffer
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Handles camera inputs
-		camera.Inputs(window);
+		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);			// bg color
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clean the back buffer and depth buffer
 		
-		// Updates and exports the camera matrix to the Vertex Shader
-		camera.updateMatrix(45.0f, 0.1f, 100.0f);
+		// Put in elsewhere
+		camera->Inputs(window);								// Handles camera inputs
+		camera->updateMatrix(45.0f, 0.1f, 100.0f);			// Updates and exports the camera matrix to the Vertex Shader
+		
 		//glLoadIdentity();
-		
-		world.Draw(terrainShader, waterShader, camera);
-		// Swap the back buffer with the front buffer
-		glfwSwapBuffers(window);
-		// Take care of all GLFW events
-		glfwPollEvents();
+		world->Draw(terrainShader, waterShader, *camera);
+		glfwSwapBuffers(window);							// Swap the back buffer with the front buffer
+		glfwPollEvents();									// Take care of all GLFW events
 	}
+
+	t.join();
+	t2.join();
+	
 	terrainShader.Delete();
 	waterShader.Delete();
-	// Delete window before ending the program
+	
 	glfwDestroyWindow(window);
-	// Terminate GLFW before ending the program
 	glfwTerminate();
 	return 0;
 }

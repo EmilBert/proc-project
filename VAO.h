@@ -2,6 +2,9 @@
 
 #include<glad/glad.h>
 #include"VBO.h"
+
+
+// Vertex Array Object
 class VAO
 {
 public:
@@ -9,7 +12,6 @@ public:
 	GLuint ID;
 	// Constructor that generates a VAO ID
 	VAO();
-
 	// Links a VBO Attribute such as a position or color to the VAO
 	void LinkAttrib(VBO& VBO, GLuint layout, GLuint numComponents, GLenum type, GLsizeiptr stride, void* offset);
 	// Binds the VAO

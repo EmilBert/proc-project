@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 #include <atomic>
+#include <algorithm>   
 
 glm::vec3 World::sand	= glm::vec3(0.76, 0.69, 0.5);
 glm::vec3 World::grass	= glm::vec3(0.0, 0.40f, 0.09);
@@ -15,7 +16,11 @@ glm::vec3 World::claydark = glm::vec3(0.50, 0.25, 0.10);
 glm::vec3 World::water	= glm::vec3(0.2, 0.2, 1.0);
 glm::vec3 World::dirt	= glm::vec3(0.3, 0.2, 0.2);
 
-World::World(){}
+
+bool vec2sort(glm::vec2 i, glm::vec2 j) 
+{ 
+	return abs(i.x) + abs(i.y) < abs(j.x) + abs(j.y);
+}
 
 World::World(int r, int seed) : radius(r), range(r * 2 + 1), noise_seed(seed)
 {
@@ -25,12 +30,22 @@ World::World(int r, int seed) : radius(r), range(r * 2 + 1), noise_seed(seed)
 	{
 		for (int z = -radius; z < radius; z++)
 		{
-			std::cout << x << " " << z << "\n";
 			relativeIndex.push_back(glm::vec2(x, z));
 		}
 	}
+
+	std::sort(relativeIndex.begin(), relativeIndex.end(), vec2sort);
+
+
+	for(glm::vec2 pos : relativeIndex)
+	{
+		std::cout << pos.x << " " << pos.y << "\n";
+	}
+
+	UpdateChunksToRender(glm::vec3(0, 0, 0));
 }
-			//chunkMap.insert(std::make_pair(std::make_pair(x,z), new Chunk(glm::vec2(x, z), generatedNoise)));
+
+
 
 /*
 void World::Generate3DBlocks()
@@ -198,7 +213,22 @@ void World::UpdateChunksToRender(glm::vec3 camPos)
 	std::pair<int, int> cameraPair(camPos.x, camPos.z);
 	lastCameraPos = cameraPos;
 
-	std::map<std::pair<int, int>, Chunk*> newChunkMap;
+	std::vector<std::pair<int, int>> toRemove;
+
+	for (auto it = chunkMap.begin(); it != chunkMap.end(); it++)
+	{
+		glm::vec2 chunkPos = glm::vec2(it->first.first, it->first.first);
+		if (glm::vec2(chunkPos - cameraPos).length() > radius) 
+		{
+			//Remove chunk
+			toRemove.push_back(it->first);
+		}
+	}
+	for(std::pair<int,int> key : toRemove)
+	{
+		delete &chunkMap[key];
+		chunkMap.erase(key);
+	}
 
 	// Check what chunks to add
 	for (glm::vec2 relationToCam : relativeIndex)
@@ -212,39 +242,58 @@ void World::UpdateChunksToRender(glm::vec3 camPos)
 		// Add existing to new map
 		if (it != chunkMap.end())
 		{
-			newChunkMap.insert(make_pair(it->first, it->second));
+			chunkMap.insert(make_pair(it->first, it->second));
 		}
 		// Add new chunk to map
 		else
 		{
 			Chunk* newChunk = new Chunk(p, generatedNoise);
-			newChunkMap.insert(std::make_pair(pp, newChunk));
+			chunkMap.insert(std::make_pair(pp, newChunk));
 			renderQueue.push(newChunk);
 		}
 	}
-	chunkMap.clear();
-	chunkMap = newChunkMap;
 }
 
 void World::GenerateChunkMeshes()
 {
-	if (renderQueue.empty()) return;
-	renderQueue.front()->GenerateMesh();
-	renderQueue.pop();
+	while(true)
+	{
+		if (!renderQueue.empty()) 
+		{
+			renderQueue.front()->Generate();
+			renderQueue.pop();
+		}
+	}
 }
 
 void World::Draw(Shader& shader, Shader& waterShader, Camera& camera)
 {
-	//std::thread th = std::thread(&World::UpdateChunksToRender, this, camera.Position);
+	glm::vec2 cameraPos = glm::vec2((int)camera.Position.x, (int)camera.Position.z);
 
-	UpdateChunksToRender(camera.Position);
-	GenerateChunkMeshes();
+	for (glm::vec2 relationToCam : relativeIndex)
+	{
+		glm::vec2 p = cameraPos + relationToCam;
+
+		std::pair<int, int> pp = std::make_pair(p.x, p.y);
+
+		auto it = chunkMap.find(pp);
+
+		// Add existing to new map
+		if (it != chunkMap.end())
+		{
+			if (it->second->setMesh) it->second->SetMesh();
+			if (!it->second->regenMesh && !it->second->setMesh)
+			{
+				it->second->Draw(shader, camera);
+			}
+			//at(make_pair(it->first, it->second))->Draw();
+		}
+	}
+
+
 
 	for (auto it = chunkMap.begin(); it != chunkMap.end(); it++)
 	{
-		if(!it->second->regenMesh)
-		{
-			it->second->Draw(shader, camera);	
-		}
+		
 	}
 }

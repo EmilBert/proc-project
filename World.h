@@ -25,6 +25,7 @@ public:
 	// Storage of chunks
 	std::vector<glm::vec2> relativeIndex;
 	std::map<std::pair<int, int>, Chunk*> chunkMap;
+
 	
 	bool rendering = false;
 	std::thread* renderThread;

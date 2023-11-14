@@ -1,6 +1,8 @@
 #pragma once
 #include "Block.h"
 #include "GeneratedNoise.h"
+#include<thread>
+#include<map>
 
 class Chunk
 {
@@ -18,8 +20,11 @@ public:
 	GLuint index_depth = 0;
 	
 	bool regenMesh = true;
-	Mesh* chunkMesh;
+	Mesh chunkMesh;
 	Mesh waterMesh;
+
+	bool building = false;
+	bool setMesh = false;
 
 	std::vector<Vertex> verts;
 	std::vector<GLuint> inds;
@@ -31,8 +36,9 @@ public:
 public:
 	Chunk();
 	Chunk(glm::vec2 cp, GeneratedNoise noise);
-
-	void GenerateMesh();
+	~Chunk();
+	void Generate();
+	void SetMesh();
 	void GenerateWaterMesh();
 	static void ExtractFace(Vertex vertices[], Block data, std::vector<Vertex>& verts, std::vector<GLuint>& inds, GLuint &index_depth);
 	void Draw(Shader& shader, Camera& camera);

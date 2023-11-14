@@ -3,10 +3,10 @@
 // Top
 Vertex Chunk::top_verts[] =
 {
-	Vertex{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)},
-	Vertex{glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f)},
 	Vertex{glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f),	glm::vec2(1.0f, 1.0f)},
-	Vertex{glm::vec3(1.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f),	glm::vec2(1.0f, 0.0f)}
+	Vertex{glm::vec3(1.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f),	glm::vec2(1.0f, 0.0f)},
+	Vertex{glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f)},
+	Vertex{glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f)}
 };
 
 // Bottom
@@ -87,21 +87,35 @@ void Chunk::ExtractFace(Vertex vertices[], Block data ,std::vector<Vertex> &vert
 	index_depth += 4;
 }
 
-Chunk::Chunk(){ }
-
 Chunk::Chunk(glm::vec2 cp, GeneratedNoise noise) : chunkPosition(cp)
 {
 	position = glm::vec3(chunkPosition.x * WIDTH, 0, chunkPosition.y * WIDTH);
 	noise.GenerateChunkBlocks(chunkPosition.x * WIDTH, chunkPosition.y * WIDTH, blocks);
 }
 
-// Generate a mesh and store it in the chunkMesh member variable 
-void Chunk::GenerateMesh()
+Chunk::~Chunk()
 {
-	Chunk* leftChunk	= nullptr;
-	Chunk* rightChunk	= nullptr;
-	Chunk* infrontChunk = nullptr;
-	Chunk* behindChunk	= nullptr;
+	delete& chunkMesh;
+	delete& waterMesh;
+	delete& blocks;
+	delete& verts;
+	delete& inds;
+}
+
+// Generate a mesh and store it in the chunkMesh member variable 
+void Chunk::Generate()
+{
+	/*
+		Chunk* leftChunk	= (chunkMap.find(std::make_pair(chunkPosition.x - 1, chunkPosition.y)) != chunkMap.end()) ? chunkMap[std::make_pair(chunkPosition.x - 1, chunkPosition.y)] : nullptr;
+		Chunk* rightChunk	= (chunkMap.find(std::make_pair(chunkPosition.x + 1, chunkPosition.y)) != chunkMap.end()) ? chunkMap[std::make_pair(chunkPosition.x + 1, chunkPosition.y)] : nullptr;
+		Chunk* infrontChunk = (chunkMap.find(std::make_pair(chunkPosition.x, chunkPosition.y - 1)) != chunkMap.end()) ? chunkMap[std::make_pair(chunkPosition.x, chunkPosition.y - 1)] : nullptr;
+		Chunk* behindChunk	= (chunkMap.find(std::make_pair(chunkPosition.x, chunkPosition.y + 1)) != chunkMap.end()) ? chunkMap[std::make_pair(chunkPosition.x, chunkPosition.y + 1)] : nullptr;
+	*/
+
+	Chunk* leftChunk	=  nullptr;
+	Chunk* rightChunk	=  nullptr;
+	Chunk* infrontChunk =  nullptr;
+	Chunk* behindChunk	=  nullptr;
 
 	index_depth = 0;
 	for (size_t x = 0; x < WIDTH;  x++)
@@ -113,7 +127,7 @@ void Chunk::GenerateMesh()
 		// Is this Block solid?
 		if (current->isSolid)
 		{
-			
+
 			//Check top and bottom
 			if (y < 1 || !blocks[x][y - 1][z].isSolid)
 			{
@@ -149,9 +163,15 @@ void Chunk::GenerateMesh()
 			}
 		}
 	}
-	chunkMesh = new Mesh(verts, inds, position);
+
 	regenMesh = false;
-	
+	setMesh = true;
+}
+
+void Chunk::SetMesh()
+{
+	chunkMesh = Mesh(verts, inds, position);
+	setMesh = false;
 }
 
 //void Chunk::GenerateWaterMesh()
@@ -198,10 +218,7 @@ void Chunk::GenerateMesh()
 
 void Chunk::Draw(Shader & shader, Camera & camera)
 {
-	if (!regenMesh) 
-	{
-		chunkMesh->Draw(shader, camera);
-	}
+	chunkMesh.Draw(shader, camera);
 }
 
 void Chunk::DrawWater(Shader& shader, Camera& camera)
